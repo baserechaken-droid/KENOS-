@@ -1,0 +1,91 @@
+import re
+
+
+class Intent:
+
+    def __init__(self, command=None, args=None):
+
+        self.command = command
+        self.args = args or []
+
+
+OPEN_WORDS = [
+    "open",
+    "launch",
+    "start",
+    "run"
+]
+
+TORCH_WORDS = [
+    "torch",
+    "flashlight",
+    "flash",
+    "light"
+]
+
+BATTERY_WORDS = [
+    "battery",
+    "charge",
+    "power"
+]
+
+WIFI_WORDS = [
+    "wifi",
+    "internet",
+    "network"
+]
+
+DATE_WORDS = [
+    "date",
+    "today"
+]
+
+TIME_WORDS = [
+    "time",
+    "clock"
+]
+
+
+def parse(text):
+
+    text = text.lower()
+
+    words = re.findall(r"[a-zA-Z0-9]+", text)
+
+    if any(word in words for word in OPEN_WORDS):
+
+        args = []
+
+        for word in words:
+
+            if word not in OPEN_WORDS:
+
+                args.append(word)
+
+        return Intent("open", args)
+
+    if any(word in words for word in TORCH_WORDS):
+
+        if "off" in words:
+
+            return Intent("torch", ["off"])
+
+        return Intent("torch", ["on"])
+
+    if any(word in words for word in BATTERY_WORDS):
+
+        return Intent("battery")
+
+    if any(word in words for word in WIFI_WORDS):
+
+        return Intent("wifi")
+
+    if any(word in words for word in DATE_WORDS):
+
+        return Intent("date")
+
+    if any(word in words for word in TIME_WORDS):
+
+        return Intent("time")
+
+    return Intent()

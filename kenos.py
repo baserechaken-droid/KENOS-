@@ -1,49 +1,78 @@
-#!/usr/bin/env python3
+from plugin_loader import load_plugins, get_skills
+from core.router import process
+from core.diagnostics import startup_check
+from core.service_manager import register, start
+from core.logger import info
+from services.scheduler import run as scheduler
+from services.notification_service import run as notification
 
-from command_manager import execute
-from plugin_loader import load_plugins
+VERSION = "9.2 AI Edition"
 
-print(r"""
- _  __          _   ___   ___
-| |/ /___ _ __ | | / _ \ / __|
-| ' // _ \ '_ \| || | | |\__ \
-| . \  __/ | | | || |_| |___/
-|_|\_\___|_| |_|_| \___/|____/
 
-Android Terminal Assistant
-""")
+def banner():
 
-load_plugins()
+    print()
+    print("=" * 46)
+    print(f"          KenOS {VERSION}")
+    print("=" * 46)
+    print()
 
-print("Plugins loaded successfully.")
-print("Type 'help' for available commands.\n")
 
-while True:
+def startup():
 
-    try:
+    banner()
 
-        text = input("[KenOS] $ ").strip()
-       
-        with open("data/history.txt", "a") as history:
-            history.write(text + "\n")
- 
-        if not text:
-            continue
+    startup_check()
 
-        if text.lower() == "exit":
+    load_plugins()
+
+    print(f"🧠 AI Skills Registered: {len(get_skills())}")
+
+    register("scheduler", scheduler)
+    register("notification", notification)
+
+    start("scheduler")
+    start("notification")
+
+    print()
+    print("🤖 Jarvis Online")
+    print()
+    print("Type 'help' for commands.")
+    print()
+
+
+def main():
+
+    startup()
+
+    while True:
+
+        try:
+
+            text = input("[KenOS] $ ").strip()
+
+            if not text:
+                continue
+
+            if text.lower() in ("exit", "quit"):
+
+                print("Goodbye!")
+                break
+
+            info(text)
+
+            process(text)
+
+        except KeyboardInterrupt:
+
+            print()
             print("Goodbye!")
             break
 
-        parts = text.split()
+        except Exception as e:
 
-        command = parts[0].lower()
+            print(f"[ERROR] {e}")
 
-        args = parts[1:]
 
-        execute(command, args)
-
-    except KeyboardInterrupt:
-        print()
-
-    except Exception as e:
-        print("Error:", e)
+if __name__ == "__main__":
+    main()

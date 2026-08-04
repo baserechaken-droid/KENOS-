@@ -1,24 +1,89 @@
-import json
-import subprocess
-
 NAME = "battery"
-DESCRIPTION = "Show battery percentage and charging status"
+
+DESCRIPTION = "Show battery status"
+
+SKILLS = [
+    "battery",
+    "charge",
+    "power",
+    "energy",
+    "percentage"
+]
+
 
 def run(args):
-    result = subprocess.run(
-        ["termux-battery-status"],
-        capture_output=True,
-        text=True
+
+    import subprocess
+    import json
+    import os
+
+
+    # Method 1: Termux API
+
+    try:
+
+        result = subprocess.run(
+            ["termux-battery-status"],
+            capture_output=True,
+            text=True
+        )
+
+
+        if result.returncode == 0:
+
+            data = json.loads(result.stdout)
+
+
+            print(
+                f"🔋 Battery: {data.get('percentage')}%"
+            )
+
+            print(
+                f"⚡ Status: {data.get('status')}"
+            )
+
+            return
+
+
+    except Exception:
+
+        pass
+
+
+
+    # Method 2: Linux Android battery path
+
+    paths = [
+        "/sys/class/power_supply/battery/capacity",
+        "/sys/class/power_supply/BAT0/capacity"
+    ]
+
+
+    for path in paths:
+
+        if os.path.exists(path):
+
+            with open(path) as f:
+
+                level = f.read().strip()
+
+
+            print(
+                f"🔋 Battery: {level}%"
+            )
+
+            return
+
+
+
+    print(
+        "⚠️ Battery information unavailable"
     )
 
-    if result.returncode != 0:
-        print("Error: Could not get battery information.")
-        return
+    print(
+        "Install Termux API:"
+    )
 
-    data = json.loads(result.stdout)
-
-    print("\nBattery")
-    print("----------------")
-    print(f"Level : {data['percentage']}%")
-    print(f"Status: {data['status']}")
-    print(f"Health: {data['health']}")
+    print(
+        "pkg install termux-api"
+    )

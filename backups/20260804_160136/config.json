@@ -1,0 +1,8 @@
+{
+    "user_name": "Ken",
+    "assistant_name": "Jarvis",
+    "voice": true,
+    "logging": true,
+    "boot_diagnostics": true,
+    "theme": "default"
+}

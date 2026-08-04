@@ -1,15 +1,41 @@
+import platform
+
 NAME = "about"
-DESCRIPTION = "Information about KenOS"
+DESCRIPTION = "About KenOS"
+
 
 def run(args):
-    print("""
-KenOS
-------
 
-Developer : Ken
-Language  : Python
-Platform  : Termux
-License   : MIT (recommended)
+    print()
 
-KenOS is a modular terminal assistant for Android.
-""")
+    print("KenOS v9.0 AI Edition")
+
+    print("----------------------------")
+
+    print("Developer : Engineer Ken")
+
+    print("Platform  :", platform.system())
+
+    print("Python    :", platform.python_version())
+
+    print("Architecture : Modular AI OS")
+
+    print()
+
+    print("Features")
+
+    print("✓ AI Assistant")
+
+    print("✓ Plugin System")
+
+    print("✓ Android Integration")
+
+    print("✓ Voice Control")
+
+    print("✓ Automation")
+
+    print("✓ Logging")
+
+    print("✓ Diagnostics")
+
+    print()

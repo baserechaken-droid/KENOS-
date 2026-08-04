@@ -1,1 +1,407 @@
 exit
+listen
+exit
+listen
+listen
+exit
+listen
+listen
+listen
+listen
+listen
+listen
+listen
+exit
+listen
+listen
+listen
+listen
+listen
+exit
+jarvis
+jarvis
+jarvis
+dashboard
+exit
+mission
+exit
+help
+jarvis
+jarvis
+jarvis
+exit
+torch on
+torch off
+help
+time
+volume
+volume 14
+wifi
+about
+sensors
+location
+location
+listen
+listen
+vibrate
+jarvis
+storage
+dashboard
+hello
+exit
+jarvis
+listen
+listen
+jarvis
+listen
+listen
+listen
+listen
+listen
+listen
+listen
+jarvis
+photo
+exit
+help
+speak
+speak hello
+jarvis
+torch on
+torch off
+device
+clear
+time
+dashboard
+vibrate
+help
+notify sleep now
+photo
+notes
+notez add 9th September
+notes add 9th September
+notes list
+exit
+mission
+mission
+sleep
+ls
+help
+listen
+exit
+dashboard
+jarvis
+jarvis
+torch on
+torch off
+torch on
+torch off
+jarvis
+exit
+listen
+listen
+listen
+listen
+listen
+listen
+listen
+exit
+jarvis
+jarvis
+jarvis
+exit
+exit
+plugins
+exit
+remember university MUT
+recall university
+exit
+tasks add Finish KenOS dashboard
+tasks add Study Mechatronics
+tasks listtasks done 1
+tasks list
+Tasks done 1
+tasks list
+exit
+exit
+app list
+apps list
+exit
+apps open chrome
+exit
+hello
+jarvis
+jarvis
+exit
+hello
+help
+update
+wifi
+exit
+jarvis
+exit
+restart
+help
+dashboard
+tree
+ls
+listen
+exit
+listen
+exit
+cat plugins/help.py
+exit
+exit
+doctor
+exit
+settings
+exit
+logs
+exit
+battery
+batery
+cat > plugins/plugins.py << 'EOF'
+from command_manager import list_plugins
+NAME = "plugins"
+DESCRIPTION = "List all loaded plugins"
+def run(args):
+plugins = list_plugins()
+print()
+print("========== LOADED PLUGINS ==========")
+print()
+for name in sorted(plugins):
+description = getattr(
+plugins[name],
+"DESCRIPTION",
+"No description"
+)
+print(f"{name:<15} {description}")
+print()
+print(f"Total: {len(plugins)} plugins")
+print()
+EOFexit
+eofexit
+exit
+plugins
+exit
+schedule
+cat > plugins/mission.py << 'EOF'
+from core.device import Device
+from command_manager import list_plugins
+from core.config import load
+from datetime import datetime
+NAME = "mission"
+DESCRIPTION = "KenOS Mission Control"
+def run(args):
+config = load()
+battery = Device.battery() or {}
+wifi = Device.wifi() or {}
+print()
+print("=" * 50)
+print("            KENOS MISSION CONTROL")
+print("=" * 50)
+print()
+print(f"🤖 Assistant : {config.get('assistant_name','Jarvis')}")
+print(f"👤 User      : {config.get('user_name','User')}")
+print()
+print(f"🔋 Battery   : {battery.get('percentage','?')}%")
+print(f"⚡ Charging  : {battery.get('status','Unknown')}")
+print(f"🌡 Health    : {battery.get('health','Unknown')}")
+print()
+if wifi:
+print(f"📶 Wi-Fi     : {wifi.get('ssid','Disconnected')}")
+print(f"📡 Signal    : {wifi.get('rssi','?')} dBm")
+print(f"🌐 IP        : {wifi.get('ip','No IP')}")
+else:
+print("📶 Wi-Fi     : Disconnected")
+print()
+print(f"🧩 Plugins   : {len(list_plugins())}")
+print(f"🕒 Time      : {datetime.now().strftime('%H:%M:%S')}")
+print(f"📅 Date      : {datetime.now().strftime('%Y-%m-%d')}")
+print()
+print("=" * 50)
+print("Commands")
+print("----------------------------------")
+print("battery     torch")
+print("wifi        notes")
+print("doctor      plugins")
+print("settings    jarvis")
+print("=" * 50)
+print()
+EOFexit
+exit
+mission
+exit
+open youtube
+open meet
+open google
+open camera
+exit
+open search KenOS AI assistant
+open www.wikipedia.org
+exit
+torch on 10
+system
+exit
+torch on 2
+torch on 5
+torch on 6
+exit
+device
+exit
+status
+exit
+control speak Hello Ken
+control vibrate
+exit
+logs
+exit
+settings
+e it
+exit
+wifi
+exit
+upgrade
+mkdir -p backups
+exit
+help
+wifi
+jarvis
+jarvis
+help
+settings
+open settings
+ooen chrome
+open chrome
+open
+open google
+open google.com
+music
+misic play
+music play
+music info
+music stop
+help
+location
+exit
+jarvis
+listen
+jarvis
+dashboard
+jarvis
+help
+volume 15
+volume
+volume 98
+volume 15
+volume 22
+volume 0
+volume -2
+volume music 100
+volume 100
+help
+tasks
+share
+share photo
+share document
+share image
+share music
+share doc
+share file
+capabilities
+open bluetooth
+open settings
+open
+open http://whatsapp.com
+open http://kilimall.com
+open messages
+open message
+mission
+system
+ls
+date
+day
+time
+time
+time
+time
+time
+time
+time
+time
+time
+time
+time
+time
+time
+time
+time
+time
+tine
+time
+time
+time
+tine
+time
+time
+clear
+exit
+stirage
+storage
+device
+listen
+listen
+listen
+listen
+listen
+listen
+jarvis
+jarvis
+listen
+listen
+exit
+exit
+update
+exit
+update
+sysinfo
+exit
+help
+sysinfo
+battery
+torch on
+torch off
+open google
+open youtube
+open Youtube
+exit
+open chrome
+open google
+open camera
+exit
+open google
+open youtube
+open camera
+exit
+plugins
+open chrome
+open youtube
+open camera
+open calculator
+open chrome
+open google
+open youtube
+ooen camera
+open camera
+open settings
+exit
+open settings
+open bluetooth
+open map Nairobi
+open phone
+oo
+open phone *544#
+exit
+schedule add 2026-08-05 08:00 Study Mechatronics
+schedule list
+exit

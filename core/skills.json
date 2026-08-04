@@ -1,0 +1,32 @@
+{
+    "open": [
+        "open",
+        "launch",
+        "start",
+        "run"
+    ],
+
+    "torch": [
+        "torch",
+        "flashlight",
+        "light"
+    ],
+
+    "battery": [
+        "battery",
+        "charge",
+        "power"
+    ],
+
+    "time": [
+        "time",
+        "clock",
+        "hour"
+    ],
+
+    "music": [
+        "music",
+        "song",
+        "play"
+    ]
+}

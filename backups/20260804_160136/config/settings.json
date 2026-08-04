@@ -1,0 +1,7 @@
+{
+    "assistant_name": "Jarvis",
+    "owner": "Ken",
+    "voice": true,
+    "startup_dashboard": true,
+    "theme": "default"
+}
