@@ -1,28 +1,28 @@
 import os
-import sys
+import platform
 
 
 def startup_check():
 
-    print()
-    print("Running startup diagnostics...")
-    print()
-
-    print(f"✓ Python {sys.version.split()[0]}")
-
-    folders = [
-        "data",
-        "logs",
-        "plugins",
-        "core",
-        "services"
+    checks = [
+        ("Python " + platform.python_version(), True),
+        ("data/", os.path.exists("data")),
+        ("logs/", os.path.exists("logs")),
+        ("plugins/", os.path.exists("plugins")),
+        ("core/", os.path.exists("core")),
+        ("services/", os.path.exists("services")),
     ]
 
-    for folder in folders:
 
-        if os.path.isdir(folder):
-            print(f"✓ {folder}/")
+    for name, status in checks:
+
+        if status:
+
+            print(f"✓ {name}")
+
         else:
-            print(f"✗ {folder}/ missing")
+
+            print(f"✗ Missing {name}")
+
 
     print()
