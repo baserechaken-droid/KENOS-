@@ -4,42 +4,68 @@ import os
 FILE = "data/memory.json"
 
 
-def load():
+class Memory:
 
-    if not os.path.exists(FILE):
-        return {}
+    def __init__(self):
 
-    try:
-
-        with open(FILE, "r") as f:
-            return json.load(f)
-
-    except:
-        return {}
+        self.data = self.load()
 
 
-def save(data):
+    def load(self):
 
-    with open(FILE, "w") as f:
-        json.dump(data, f, indent=4)
+        os.makedirs("data", exist_ok=True)
 
+        if not os.path.exists(FILE):
 
-def remember(key, value):
+            return {}
 
-    data = load()
+        try:
 
-    data[key.lower()] = value
+            with open(FILE) as f:
 
-    save(data)
+                return json.load(f)
 
+        except:
 
-def recall(key):
-
-    data = load()
-
-    return data.get(key.lower())
+            return {}
 
 
-def all_memory():
+    def save(self):
 
-    return load()
+        with open(FILE, "w") as f:
+
+            json.dump(
+                self.data,
+                f,
+                indent=4
+            )
+
+
+    def remember(self, key, value):
+
+        self.data[key.lower()] = value
+
+        self.save()
+
+
+    def recall(self, key):
+
+        return self.data.get(key.lower())
+
+
+    def forget(self, key):
+
+        if key.lower() in self.data:
+
+            del self.data[key.lower()]
+
+            self.save()
+
+
+    def all(self):
+
+        return dict(self.data)
+
+
+memory = Memory()
+
