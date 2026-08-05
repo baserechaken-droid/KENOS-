@@ -1,0 +1,8 @@
+{
+    "name": "Jarvis",
+    "gender": "male",
+    "enabled": true,
+    "speed": 1.0,
+    "pitch": 0.8,
+    "greeting": "Welcome back Ken. KenOS systems are online."
+}
