@@ -1,0 +1,466 @@
+from datetime import datetime
+from core.planner import split_tasks
+
+
+class Jarvis:
+
+    def __init__(self):
+
+        self.context = {
+            "plugin": None,
+            "args": [],
+            "time": None
+        }
+
+        self.history = []
+
+        self.max_history = 30
+
+        self.name = "Jarvis"
+
+        self.smalltalk = {
+            "hello": "Hello Ken.",
+            "hi": "Hello Ken.",
+            "hey": "Hello Ken.",
+            "good morning": "Good morning Ken.",
+            "good afternoon": "Good afternoon Ken.",
+            "good evening": "Good evening Ken.",
+            "how are you": "I'm operating normally and ready to help.",
+            "who are you": "I am Jarvis, your KenOS assistant.",
+            "thank you": "You're welcome.",
+            "thanks": "You're welcome.",
+            "good job": "Thank you.",
+            "bye": "Goodbye.",
+            "goodbye": "Goodbye."
+        }
+
+    def remember(self, plugin, args):
+
+        self.context = {
+            "plugin": plugin,
+            "args": list(args),
+            "time": datetime.now()
+        }
+
+        self.history.append(
+            {
+                "plugin": plugin,
+                "args": list(args),
+                "time": datetime.now()
+            }
+        )
+
+        if len(self.history) > self.max_history:
+
+            self.history.pop(0)
+
+    def set_context(self, plugin, args):
+
+        self.remember(plugin, args)
+
+    def last_plugin(self):
+
+        return self.context.get("plugin")
+
+    def last_args(self):
+
+        return self.context.get("args", [])
+
+    def get_history(self):
+
+        return list(self.history)
+
+    def clear_history(self):
+
+        self.history.clear()
+
+    def small_talk(self, text):
+
+        text = text.lower().strip()
+
+        for key, value in self.smalltalk.items():
+
+            if key == text:
+
+                return value
+
+        return None
+
+    def resolve_followup(self, text):
+
+        text = text.lower().strip()
+
+        if not self.context["plugin"]:
+            return None
+
+        plugin = self.context["plugin"]
+
+        if plugin == "torch":
+
+            if "turn it off" in text:
+                return (
+                    "torch",
+                    ["off"]
+                )
+
+            if "switch it off" in text:
+                return (
+                    "torch",
+                    ["off"]
+                )
+
+            if "disable it" in text:
+                return (
+                    "torch",
+                    ["off"]
+                )
+
+            if "turn it on" in text:
+                return (
+                    "torch",
+                    ["on"]
+                )
+
+            if "switch it on" in text:
+                return (
+                    "torch",
+                    ["on"]
+                )
+
+            if "enable it" in text:
+                return (
+                    "torch",
+                    ["on"]
+                )
+
+        return None
+
+    def plan(self, text):
+
+        tasks = split_tasks(text)
+
+        output = []
+
+        for task in tasks:
+
+            if "plugin" in task:
+
+                output.append(task)
+
+                continue
+
+            if "text" not in task:
+
+                continue
+
+            followup = self.resolve_followup(
+                task["text"]
+            )
+
+            if followup:
+
+                plugin, args = followup
+
+                output.append(
+                    {
+                        "plugin": plugin,
+                        "args": args,
+                        "delay": task.get(
+                            "delay",
+                            0
+                        )
+                    }
+                )
+
+                continue
+
+            output.append(task)
+
+        return output
+
+
+    def reply(self, text):
+
+        text = text.strip()
+
+        #
+        # Small talk
+        #
+
+        answer = self.small_talk(text)
+
+        if answer:
+
+            return (
+                "__chat__",
+                answer
+            )
+
+        #
+        # Planning
+        #
+
+        tasks = self.plan(text)
+
+        if len(tasks) > 1:
+
+            return (
+                "__multi__",
+                tasks
+            )
+
+        if len(tasks) == 1:
+
+            task = tasks[0]
+
+            if "plugin" in task:
+
+                return (
+                    task["plugin"],
+                    task.get(
+                        "args",
+                        []
+                    )
+                )
+
+            if "text" in task:
+
+                followup = self.resolve_followup(
+                    task["text"]
+                )
+
+                if followup:
+
+                    return followup
+
+                return (
+                    task["text"],
+                    []
+                )
+
+        return (
+            None,
+            []
+        )
+
+
+jarvis = Jarvis()
+
+
+    #
+    # Intent Engine
+    #
+
+    def detect_intent(self, text):
+
+        text = text.lower().strip()
+
+        intents = [
+
+            (
+                (
+                    "what time",
+                    "what's the time",
+                    "tell me the time",
+                    "current time",
+                    "time now",
+                    "time is it"
+                ),
+                "time",
+                []
+            ),
+
+            (
+                (
+                    "today's date",
+                    "todays date",
+                    "current date",
+                    "what date",
+                    "date today"
+                ),
+                "date",
+                []
+            ),
+
+            (
+                (
+                    "battery",
+                    "battery level",
+                    "battery percentage",
+                    "battery status",
+                    "how much battery"
+                ),
+                "battery",
+                []
+            ),
+
+            (
+                (
+                    "dashboard",
+                    "system dashboard",
+                    "show dashboard",
+                    "status dashboard"
+                ),
+                "dashboard",
+                []
+            ),
+
+            (
+                (
+                    "system status",
+                    "device status",
+                    "system info",
+                    "system information"
+                ),
+                "status",
+                []
+            ),
+
+            (
+                (
+                    "wifi",
+                    "wi-fi",
+                    "wireless"
+                ),
+                "wifi",
+                []
+            ),
+
+            (
+                (
+                    "volume up",
+                    "increase volume",
+                    "raise volume",
+                    "louder"
+                ),
+                "volume",
+                ["up"]
+            ),
+
+            (
+                (
+                    "volume down",
+                    "decrease volume",
+                    "lower volume",
+                    "quieter"
+                ),
+                "volume",
+                ["down"]
+            ),
+
+            (
+                (
+                    "mute",
+                    "silence"
+                ),
+                "volume",
+                ["mute"]
+            )
+
+        ]
+
+        for phrases, plugin, args in intents:
+
+            for phrase in phrases:
+
+                if phrase in text:
+
+                    return (
+                        plugin,
+                        args
+                    )
+
+        return None
+
+
+    def ai_route(self, text):
+
+        #
+        # Natural language intent
+        #
+
+        intent = self.detect_intent(text)
+
+        if intent:
+
+            return intent
+
+        #
+        # Context follow-up
+        #
+
+        followup = self.resolve_followup(text)
+
+        if followup:
+
+            return followup
+
+        return None
+
+
+    def reply(self, text):
+
+        text = text.strip()
+
+        #
+        # Small talk
+        #
+
+        answer = self.small_talk(text)
+
+        if answer:
+
+            return (
+                "__chat__",
+                answer
+            )
+
+        #
+        # Natural-language routing
+        #
+
+        route = self.ai_route(text)
+
+        if route:
+
+            return route
+
+        #
+        # Planner
+        #
+
+        tasks = self.plan(text)
+
+        if len(tasks) > 1:
+
+            return (
+                "__multi__",
+                tasks
+            )
+
+        if len(tasks) == 1:
+
+            task = tasks[0]
+
+            if "plugin" in task:
+
+                return (
+                    task["plugin"],
+                    task.get("args", [])
+                )
+
+            if "text" in task:
+
+                return (
+                    task["text"],
+                    []
+                )
+
+        return (
+            None,
+            []
+        )
+
+
+jarvis = Jarvis()
+

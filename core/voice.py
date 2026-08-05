@@ -1,52 +1,34 @@
-import json
 import subprocess
 import time
 
+from services.voice.engine import voice
 
-WAKE_WORDS = [
+
+WAKE_WORDS = (
     "jarvis",
     "hey jarvis",
-    "ok jarvis"
-]
+    "okay jarvis",
+    "ok jarvis",
+    "kenos"
+)
 
 
 def speak(text):
 
-    if not text:
-        return
+    if text:
 
-    try:
-
-        subprocess.run(
-            [
-                "termux-tts-speak",
-                str(text)
-            ],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            check=False
-        )
-
-    except Exception:
-
-        pass
+        voice.speak(str(text))
 
 
-def listen(prompt=True):
-
-    if prompt:
-
-        print("🎤 Listening...")
+def listen():
 
     try:
 
         result = subprocess.run(
-            [
-                "termux-speech-to-text"
-            ],
+            ["termux-speech-to-text"],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=12
         )
 
     except Exception:
@@ -57,30 +39,7 @@ def listen(prompt=True):
 
         return None
 
-    text = result.stdout.strip()
-
-    #
-    # Some versions of termux-speech-to-text
-    # return JSON.
-    #
-
-    if text.startswith("{"):
-
-        try:
-
-            obj = json.loads(text)
-
-            text = (
-                obj.get("text")
-                or obj.get("result")
-                or ""
-            )
-
-        except Exception:
-
-            pass
-
-    text = text.strip().lower()
+    text = result.stdout.strip().lower()
 
     if not text:
 
@@ -89,24 +48,65 @@ def listen(prompt=True):
     return text
 
 
-def wait_for_wake_word():
+def strip_wake_word(text):
 
-    print("🤖 Waiting for wake word...")
+    text = text.strip()
+
+    for wake in WAKE_WORDS:
+
+        if text.startswith(wake):
+
+            text = text[len(wake):].strip()
+
+            break
+
+    return text
+
+
+def conversation(callback):
+
+    print()
+    print("🎤 Voice Assistant Ready")
+    print("Say 'goodbye' to exit.")
+    print()
+
+    speak("Voice assistant ready.")
 
     while True:
 
-        text = listen(prompt=False)
+        print("🎤 Listening...")
 
-        if not text:
+        command = listen()
+
+        if not command:
 
             continue
 
-        print(f"🎤 {text}")
+        command = strip_wake_word(command)
 
-        if any(word in text for word in WAKE_WORDS):
+        if not command:
 
-            speak("Yes Ken?")
+            continue
 
-            return True
+        print(f"🗣 {command}")
 
-        time.sleep(0.2)
+        if command in (
+            "bye",
+            "goodbye",
+            "exit",
+            "quit",
+            "stop"
+        ):
+
+            speak("Goodbye.")
+
+            print("👋 Voice mode ended.")
+
+            break
+
+        callback(command)
+
+        voice.wait()
+
+        time.sleep(0.05)
+

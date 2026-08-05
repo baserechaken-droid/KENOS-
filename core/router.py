@@ -15,20 +15,17 @@ def speak(text):
         return
 
     try:
+
         if voice:
             voice.speak(str(text))
+
     except Exception:
         pass
 
 
 def run_plugin(plugin, args):
 
-    if hasattr(jarvis, "set_context"):
-
-        try:
-            jarvis.set_context(plugin, args)
-        except Exception:
-            pass
+    jarvis.set_context(plugin, args)
 
     result = execute(plugin, args)
 
@@ -43,31 +40,27 @@ def run_plugin(plugin, args):
 
 def run_plan(plan):
 
-    if not isinstance(plan, list):
-        return
-
     for step in plan:
 
-        if not isinstance(step, dict):
-            continue
-
-        plugin = step.get("plugin")
-
-        if not plugin:
-            continue
-
-        args = step.get("args", [])
         delay = step.get("delay", 0)
-
-        print(f"🤖 Jarvis → {plugin}")
-
-        run_plugin(plugin, args)
 
         if delay > 0:
 
             print(f"⏳ Waiting {delay} second(s)...")
 
             time.sleep(delay)
+
+        plugin = step.get("plugin")
+
+        if not plugin:
+
+            continue
+
+        args = step.get("args", [])
+
+        print(f"🤖 Jarvis → {plugin}")
+
+        run_plugin(plugin, args)
 
 
 def process(text):
@@ -77,25 +70,36 @@ def process(text):
     if not text:
         return
 
+    #
+    # Direct command
+    #
+
     words = text.split()
 
     command = words[0].lower()
 
-    #
-    # Execute registered plugins FIRST.
-    #
-
     if exists(command):
 
-        run_plugin(command, words[1:])
+        run_plugin(
+            command,
+            words[1:]
+        )
 
         return
 
     #
-    # AI processing.
+    # AI
     #
 
     plugin, data = jarvis.reply(text)
+
+    if plugin == "__chat__":
+
+        print(f"🤖 Jarvis: {data}")
+
+        speak(data)
+
+        return
 
     if plugin == "__multi__":
 
@@ -112,11 +116,12 @@ def process(text):
         return
 
     #
-    # Unknown command.
+    # Unknown
     #
 
-    message = "Sorry Ken, I did not understand that command."
+    message = "Sorry Ken, I didn't understand that."
 
     print(f"🤖 Jarvis: {message}")
 
     speak(message)
+

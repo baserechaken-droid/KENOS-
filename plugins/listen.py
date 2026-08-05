@@ -1,114 +1,106 @@
-from core.voice import listen, speak
+from core.voice import conversation, listen, speak
 from core.router import process
 
 NAME = "listen"
-DESCRIPTION = "Voice recognition"
+DESCRIPTION = "Voice Assistant"
 
 SKILLS = [
     "listen",
     "voice",
-    "microphone",
     "mic",
-    "jarvis"
+    "microphone",
+    "conversation",
+    "talk"
 ]
 
+
 EXIT_WORDS = {
-    "exit",
-    "quit",
     "bye",
     "goodbye",
-    "stop",
+    "exit",
+    "quit",
     "stop listening",
-    "cancel"
+    "stop"
 }
 
 
-def banner():
+def normalize(text):
 
-    print()
-    print("══════════════════════════════════════")
-    print("🎤        JARVIS VOICE MODE")
-    print("══════════════════════════════════════")
-    print("Say 'stop listening' to exit.")
-    print()
+    if not text:
+        return ""
+
+    text = text.lower().strip()
+
+    replacements = {
+
+        "what's": "what is",
+
+        "whats": "what is",
+
+        "it's": "it is",
+
+        "turn on the flash light": "turn on the flashlight",
+
+        "turn off the flash light": "turn off the flashlight",
+
+        "flash light": "flashlight",
+
+        "wi fi": "wifi"
+
+    }
+
+    for old, new in replacements.items():
+
+        text = text.replace(old, new)
+
+    return text
+
+
+def callback(command):
+
+    command = normalize(command)
+
+    process(command)
 
 
 def run(args):
 
     mode = " ".join(args).lower().strip()
 
-    #
-    # Continuous voice mode
-    #
-
     if mode in (
         "",
-        "loop",
-        "continuous",
         "voice",
-        "conversation"
+        "conversation",
+        "continuous",
+        "loop",
+        "chat"
     ):
 
-        banner()
-
-        speak("Jarvis voice mode activated.")
-
-        while True:
-
-            print("🎤 Listening...")
-
-            command = listen()
-
-            if not command:
-
-                print("⚠ No speech detected.")
-                speak("Please repeat.")
-                continue
-
-            command = command.strip()
-
-            print(f"🗣 You: {command}")
-
-            if command.lower() in EXIT_WORDS:
-
-                speak("Voice mode terminated.")
-
-                print()
-                print("👋 Voice mode ended.")
-                print()
-
-                break
-
-            try:
-
-                process(command)
-
-            except Exception as e:
-
-                print(f"[ERROR] {e}")
-
-                speak("An error occurred.")
+        conversation(callback)
 
         return
-
-    #
-    # Single command mode
-    #
-
-    print("🎤 Listening...")
 
     command = listen()
 
     if not command:
 
-        print("⚠ No speech detected.")
+        print("🤖 I didn't hear anything.")
 
         speak("I didn't hear anything.")
 
         return
 
-    command = command.strip()
+    command = normalize(command)
 
-    print(f"🗣 You: {command}")
+    print(f"🗣 You said: {command}")
+
+    if command in EXIT_WORDS:
+
+        print("👋 Voice mode ended.")
+
+        speak("Goodbye.")
+
+        return
 
     process(command)
+

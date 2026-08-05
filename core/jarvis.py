@@ -1,61 +1,59 @@
+from core.chat import reply as chat_reply
+from core.context import context
+from core.intents import detect
 from core.planner import split_tasks
 
 
 class Jarvis:
 
-
-    def __init__(self):
-
-        self.context = {
-            "plugin": None,
-            "args": []
-        }
-
-
-
     def set_context(self, plugin, args):
 
-        self.context = {
-            "plugin": plugin,
-            "args": args
-        }
-
-
+        context.remember(plugin, args)
 
     def plan(self, text):
 
-        tasks = split_tasks(text)
-
-        output = []
-
-        for task in tasks:
-
-            if "plugin" in task:
-
-                output.append(task)
-
-            elif "text" in task:
-
-                output.append(
-                    {
-                        "plugin": task["text"],
-                        "args": [],
-                        "delay": task.get(
-                            "delay",
-                            0
-                        )
-                    }
-                )
-
-
-        return output
-
-
+        return split_tasks(text)
 
     def reply(self, text):
 
-        tasks = self.plan(text)
+        #
+        # Chat responses
+        #
 
+        answer = chat_reply(text)
+
+        if answer:
+
+            return (
+                "__chat__",
+                answer
+            )
+
+        #
+        # Context follow-up
+        #
+
+        follow = context.resolve_followup(text)
+
+        if follow:
+
+            return follow
+
+        #
+        # Intent detection
+        #
+
+        intent = detect(text)
+
+        if intent:
+
+            return intent
+
+        #
+        # Planner
+        #
+
+        tasks = self.plan(text)
 
         if len(tasks) > 1:
 
@@ -64,16 +62,26 @@ class Jarvis:
                 tasks
             )
 
-
         if len(tasks) == 1:
 
             task = tasks[0]
 
-            return (
-                task.get("plugin"),
-                task.get("args", [])
-            )
+            if "plugin" in task:
 
+                return (
+                    task["plugin"],
+                    task.get(
+                        "args",
+                        []
+                    )
+                )
+
+            if "text" in task:
+
+                return (
+                    task["text"],
+                    []
+                )
 
         return (
             None,
@@ -81,5 +89,5 @@ class Jarvis:
         )
 
 
-
 jarvis = Jarvis()
+

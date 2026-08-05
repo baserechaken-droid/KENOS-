@@ -1,35 +1,117 @@
+from datetime import datetime
+
+
 class Context:
 
     def __init__(self):
 
-        self.last_plugin = None
-        self.last_args = []
-        self.last_command = ""
-        self.last_result = ""
+        self.reset()
 
 
-    def update(self, plugin, args, command="", result=""):
+    def reset(self):
 
-        self.last_plugin = plugin
-        self.last_args = args
-        self.last_command = command
-        self.last_result = result
+        self.plugin = None
 
+        self.args = []
 
-    def plugin(self):
-        return self.last_plugin
+        self.time = None
 
-
-    def args(self):
-        return self.last_args
+        self.history = []
 
 
-    def command(self):
-        return self.last_command
+    def remember(self, plugin, args):
+
+        self.plugin = plugin
+
+        self.args = list(args)
+
+        self.time = datetime.now()
+
+        self.history.append(
+            {
+                "plugin": plugin,
+                "args": list(args),
+                "time": self.time
+            }
+        )
+
+        if len(self.history) > 50:
+
+            self.history.pop(0)
 
 
-    def result(self):
-        return self.last_result
+    def last_plugin(self):
+
+        return self.plugin
+
+
+    def last_args(self):
+
+        return self.args
+
+
+    def resolve_followup(self, text):
+
+        text = text.lower()
+
+        #
+        # Torch context
+        #
+
+        if self.plugin == "torch":
+
+            if any(
+                x in text for x in (
+                    "turn it off",
+                    "switch it off",
+                    "disable it",
+                    "turn off",
+                    "switch off"
+                )
+            ):
+
+                return (
+                    "torch",
+                    ["off"]
+                )
+
+            if any(
+                x in text for x in (
+                    "turn it on",
+                    "switch it on",
+                    "enable it",
+                    "turn on",
+                    "switch on"
+                )
+            ):
+
+                return (
+                    "torch",
+                    ["on"]
+                )
+
+        #
+        # Repeat last command
+        #
+
+        if any(
+            x in text for x in (
+                "again",
+                "repeat",
+                "do that again",
+                "repeat that"
+            )
+        ):
+
+            if self.plugin:
+
+                return (
+                    self.plugin,
+                    self.args
+                )
+
+        return None
 
 
 context = Context()
+
