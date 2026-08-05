@@ -1,13 +1,16 @@
-from plugin_loader import load_plugins, get_skills, get_plugins
+from plugin_loader import load_plugins, get_skills
 from core.router import process
 from core.diagnostics import startup_check
 from core.service_manager import register, start
 from core.logger import info
-from core.logo import show as logo
-from core.prompt import prompt
+from core.prompt import get_prompt
+from core.logo import show as show_logo
 
 from services.scheduler import run as scheduler
 from services.notification_service import run as notification
+
+import platform
+from datetime import datetime
 
 
 VERSION = "10 AI Edition"
@@ -15,30 +18,57 @@ VERSION = "10 AI Edition"
 
 def banner():
 
-    logo()
-
-
-def dashboard():
+    show_logo()
 
     print()
-    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-    print("✓ System Ready")
-    print("✓ AI Engine Ready")
-    print(f"✓ Plugins Loaded : {len(get_plugins())}")
-    print(f"✓ AI Skills      : {len(get_skills())}")
-    print("✓ Voice Engine   : Ready")
-    print("✓ Scheduler      : Running")
-    print("✓ Notifications  : Running")
-    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    print("        Android AI Operating System")
+    print(f"             Version {VERSION}")
     print()
 
-    print("🤖 Jarvis Online")
+    print("Initializing AI Engine...")
+    print("[████████████████████████████████] 100%")
     print()
-    print("Commands:")
-    print("  help     - Show commands")
-    print("  listen   - Single voice command")
-    print("  voice    - Continuous voice mode")
-    print("  exit     - Shutdown KenOS")
+
+    print("Loading Plugins...")
+    print("[████████████████████████████████] 100%")
+    print()
+
+    print("Starting Services...")
+    print("[████████████████████████████████] 100%")
+    print()
+
+    print("Preparing Voice Assistant...")
+    print("[████████████████████████████████] 100%")
+    print()
+
+
+def system_info():
+
+    now = datetime.now()
+
+    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+    print(
+        f"✓ System      : Android"
+    )
+
+    print(
+        f"✓ Python      : {platform.python_version()}"
+    )
+
+    print(
+        f"✓ Date        : {now.strftime('%d %B %Y')}"
+    )
+
+    print(
+        f"✓ Time        : {now.strftime('%H:%M:%S')}"
+    )
+
+    print(
+        "✓ Status      : READY"
+    )
+
+    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
     print()
 
 
@@ -48,7 +78,11 @@ def startup():
 
     startup_check()
 
-    plugins = load_plugins()
+    load_plugins()
+
+    print(
+        f"✓ Plugins Loaded : {len(get_skills())}"
+    )
 
     register(
         "scheduler",
@@ -63,7 +97,30 @@ def startup():
     start("scheduler")
     start("notification")
 
-    dashboard()
+    system_info()
+
+    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    print("✓ System Ready")
+    print("✓ AI Engine Ready")
+    print(f"✓ AI Skills      : {len(get_skills())}")
+    print("✓ Voice Engine   : Ready")
+    print("✓ Scheduler      : Running")
+    print("✓ Notifications  : Running")
+    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+    print()
+
+    print("🤖 Jarvis Online")
+
+    print()
+
+    print("Commands:")
+    print("  help     - Show commands")
+    print("  listen   - Single voice command")
+    print("  voice    - Continuous voice mode")
+    print("  exit     - Shutdown KenOS")
+
+    print()
 
 
 def main():
@@ -74,7 +131,10 @@ def main():
 
         try:
 
-            text = input(prompt()).strip()
+            text = input(
+                get_prompt()
+            ).strip()
+
 
             if not text:
 
@@ -88,7 +148,8 @@ def main():
             ):
 
                 print()
-                print("👋 Shutting down KenOS...")
+                print("🤖 Jarvis shutting down...")
+                print("Goodbye!")
                 break
 
 
@@ -100,14 +161,16 @@ def main():
         except KeyboardInterrupt:
 
             print()
-            print()
-            print("👋 Shutting down KenOS...")
+            print("🤖 Jarvis shutting down...")
+            print("Goodbye!")
             break
 
 
         except Exception as e:
 
-            print(f"[ERROR] {e}")
+            print(
+                f"[ERROR] {e}"
+            )
 
 
 if __name__ == "__main__":
