@@ -49,13 +49,15 @@ def execute(command, args):
 
         try:
 
-            module.run(args)
+            result = module.run(args)
+
+            return result
 
         except Exception as e:
 
             print(f"[ERROR] {command}: {e}")
 
-        return
+            return None
 
     suggestion = difflib.get_close_matches(
         command,
@@ -65,7 +67,6 @@ def execute(command, args):
     )
 
     print()
-
     print(f"Unknown command: {command}")
 
     if suggestion:
@@ -73,3 +74,5 @@ def execute(command, args):
 
     print("Type 'help' to view commands.")
     print()
+
+    return None

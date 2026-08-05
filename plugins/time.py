@@ -1,3 +1,5 @@
+from datetime import datetime
+
 NAME = "time"
 
 DESCRIPTION = "Show current time"
@@ -5,27 +7,18 @@ DESCRIPTION = "Show current time"
 SKILLS = [
     "time",
     "clock",
-    "hour",
-    "date",
-    "today"
+    "hour"
 ]
 
 
 def run(args):
 
-    from datetime import datetime
-
-
     now = datetime.now()
 
+    current_time = now.strftime("%H:%M:%S")
+    current_date = now.strftime("%Y-%m-%d")
 
-    print(
-        "🕒 Time:",
-        now.strftime("%H:%M:%S")
-    )
+    print(f"🕒 Time: {current_time}")
+    print(f"📅 Date: {current_date}")
 
-
-    print(
-        "📅 Date:",
-        now.strftime("%Y-%m-%d")
-    )
+    return f"The time is {current_time}. Today is {current_date}."

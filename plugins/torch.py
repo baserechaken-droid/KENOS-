@@ -14,56 +14,44 @@ def run(args):
 
     import subprocess
 
-
     if not args:
 
-        print(
-            "Usage: torch on/off"
-        )
-
-        return
-
+        print("Usage: torch on/off")
+        return "Say torch on or torch off."
 
     command = " ".join(args).lower()
 
-
     try:
 
-        if any(x in command for x in ["on","enable","start"]):
+        if "on" in command:
 
             subprocess.run(
-                ["termux-torch","on"]
+                ["termux-torch", "on"],
+                check=False
             )
 
-            print(
-                "🔦 Flashlight ON"
-            )
+            print("🔦 Flashlight ON")
 
+            return "Flashlight turned on."
 
-        elif any(x in command for x in ["off","disable","stop"]):
+        if "off" in command:
 
             subprocess.run(
-                ["termux-torch","off"]
+                ["termux-torch", "off"],
+                check=False
             )
 
-            print(
-                "🔦 Flashlight OFF"
-            )
+            print("🔦 Flashlight OFF")
 
+            return "Flashlight turned off."
 
-        else:
+        print("Use torch on or torch off")
 
-            print(
-                "Use torch on or torch off"
-            )
-
+        return "Please say on or off."
 
     except FileNotFoundError:
 
-        print(
-            "⚠️ Install Termux API:"
-        )
+        print("⚠️ Install Termux API:")
+        print("pkg install termux-api")
 
-        print(
-            "pkg install termux-api"
-        )
+        return "Termux API is not installed."

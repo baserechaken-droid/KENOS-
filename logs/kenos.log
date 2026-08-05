@@ -735,3 +735,92 @@
 [2026-08-04 22:56:29] [INFO] listery
 [2026-08-04 22:56:42] [INFO] listen
 [2026-08-04 22:56:58] [INFO] listen
+[2026-08-04 23:14:40] [INFO] jarvis
+[2026-08-04 23:14:48] [INFO] jarvis hello
+[2026-08-04 23:15:00] [INFO] jarvis vibrate phone
+[2026-08-04 23:15:10] [INFO] jarvis vibrate
+[2026-08-04 23:15:29] [INFO] what's my battery
+[2026-08-04 23:16:43] [INFO] open whatsapp business
+[2026-08-04 23:20:16] [INFO] e it
+[2026-08-04 23:20:59] [INFO] battery
+[2026-08-04 23:21:03] [INFO] time
+[2026-08-04 23:21:13] [INFO] what's tge time
+[2026-08-04 23:26:27] [INFO] exiy
+[2026-08-04 23:34:04] [INFO] battery
+[2026-08-04 23:34:08] [INFO] time
+[2026-08-04 23:34:16] [INFO] what time is it
+[2026-08-04 23:34:29] [INFO] torch on
+[2026-08-04 23:34:47] [INFO] turn on my flashlight
+[2026-08-04 23:35:06] [INFO] what's my battery
+[2026-08-04 23:35:48] [INFO] cat > plugins/listen.py << 'EOF'
+[2026-08-04 23:35:48] [INFO] from core.voice import listen, speak
+[2026-08-04 23:35:48] [INFO] from core.router import process
+[2026-08-04 23:35:48] [INFO] NAME = "listen"
+[2026-08-04 23:35:48] [INFO] DESCRIPTION = "Listen for one voice command"
+[2026-08-04 23:35:48] [INFO] SKILLS = [
+[2026-08-04 23:35:48] [INFO] "listen",
+[2026-08-04 23:35:48] [INFO] "voice",
+[2026-08-04 23:35:48] [INFO] "microphone",
+[2026-08-04 23:35:48] [INFO] "mic"
+[2026-08-04 23:35:48] [INFO] ]
+[2026-08-04 23:35:48] [INFO] def run(args):
+[2026-08-04 23:35:49] [INFO] command = listen()
+[2026-08-04 23:35:49] [INFO] if not command:
+[2026-08-04 23:35:49] [INFO] speak("I didn't hear anything.")
+[2026-08-04 23:35:49] [INFO] print("🤖 I didn't hear anything.")
+[2026-08-04 23:35:49] [INFO] return
+[2026-08-04 23:35:49] [INFO] print(f"🎤 You said: {command}")
+[2026-08-04 23:35:49] [INFO] process(command)
+[2026-08-04 23:35:59] [INFO] EOFexit
+[2026-08-04 23:36:44] [INFO] listen
+[2026-08-04 23:37:06] [INFO] listen
+[2026-08-04 23:37:21] [INFO] listen
+[2026-08-05 09:27:17] [INFO] open /storage/emulated/0/Pictures
+[2026-08-05 09:27:37] [INFO] jarvis
+[2026-08-05 09:27:44] [INFO] jarvis hello
+[2026-08-05 09:28:07] [INFO] jarvis vibrate
+[2026-08-05 09:28:35] [INFO] jarvis location
+[2026-08-05 09:28:44] [INFO] jarvis show location
+[2026-08-05 09:28:49] [INFO] mission
+[2026-08-05 09:29:03] [INFO] dashboard
+[2026-08-05 09:44:33] [INFO] apps
+[2026-08-05 09:44:41] [INFO] app open calculater
+[2026-08-05 09:44:58] [INFO] open phone
+[2026-08-05 09:45:11] [INFO] open calculator
+[2026-08-05 09:45:30] [INFO] open settings
+[2026-08-05 09:45:37] [INFO] listen
+[2026-08-05 09:45:51] [INFO] help
+[2026-08-05 09:46:01] [INFO] volume 50
+[2026-08-05 09:46:09] [INFO] volume 14
+[2026-08-05 09:46:22] [INFO] volume 00
+[2026-08-05 09:46:31] [INFO] version
+[2026-08-05 09:46:40] [INFO] recall
+[2026-08-05 09:46:54] [INFO] recall university
+[2026-08-05 09:47:04] [INFO] dashboard
+[2026-08-05 09:47:46] [INFO] open whatsapp business
+[2026-08-05 09:48:01] [INFO] open camera
+[2026-08-05 09:48:22] [INFO] control
+[2026-08-05 09:48:40] [INFO] notify hello ken
+[2026-08-05 09:49:08] [INFO] volume 100
+[2026-08-05 09:49:23] [INFO] volume 16
+[2026-08-05 09:49:31] [INFO] volume 14
+[2026-08-05 09:49:39] [INFO] volume 100
+[2026-08-05 09:49:46] [INFO] volume 150
+[2026-08-05 09:50:01] [INFO] sysinfo
+[2026-08-05 09:50:16] [INFO] doctor
+[2026-08-05 09:50:29] [INFO] status
+[2026-08-05 09:50:40] [INFO] wifi
+[2026-08-05 09:50:50] [INFO] wifi on
+[2026-08-05 09:50:59] [INFO] bluetooth
+[2026-08-05 09:51:19] [INFO] device
+[2026-08-05 09:51:32] [INFO] neofetch
+[2026-08-05 09:52:15] [INFO] jarvis open music
+[2026-08-05 09:52:28] [INFO] jarvis pause music
+[2026-08-05 09:52:49] [INFO] reload
+[2026-08-05 09:53:04] [INFO] theme
+[2026-08-05 09:53:41] [INFO] reload 5
+[2026-08-05 10:17:08] [INFO] jarvis
+[2026-08-05 10:17:18] [INFO] jarvis hello
+[2026-08-05 10:22:24] [INFO] torch on
+[2026-08-05 10:22:37] [INFO] torch off
+[2026-08-05 10:22:47] [INFO] battery
