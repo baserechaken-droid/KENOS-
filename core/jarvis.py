@@ -1,250 +1,85 @@
-from core.nlp import parse
-from core.memory import remember as save_memory
-from core.memory import recall as load_memory
 from core.planner import split_tasks
 
 
 class Jarvis:
 
+
     def __init__(self):
 
-        self.session = {
-            "history": [],
-            "last_plugin": None,
-            "last_args": []
+        self.context = {
+            "plugin": None,
+            "args": []
         }
 
-    #
-    # Conversation Context
-    #
 
-    def set_context(self, plugin, args=None):
 
-        self.session["last_plugin"] = plugin
-        self.session["last_args"] = list(args or [])
+    def set_context(self, plugin, args):
 
-    def get_context(self):
+        self.context = {
+            "plugin": plugin,
+            "args": args
+        }
 
-        return (
-            self.session["last_plugin"],
-            self.session["last_args"]
-        )
 
-    #
-    # Planner
-    #
 
     def plan(self, text):
 
-        plan = []
+        tasks = split_tasks(text)
 
-        current_plugin = None
-        current_args = []
+        output = []
 
-        for task in split_tasks(text):
+        for task in tasks:
 
-            task_text = task["text"].strip()
+            if "plugin" in task:
 
-            delay = task["delay"]
+                output.append(task)
 
-            intent = parse(task_text)
+            elif "text" in task:
 
-            #
-            # Normal command
-            #
+                output.append(
+                    {
+                        "plugin": task["text"],
+                        "args": [],
+                        "delay": task.get(
+                            "delay",
+                            0
+                        )
+                    }
+                )
 
-            if intent.command:
 
-                current_plugin = intent.command
-                current_args = list(intent.args)
+        return output
 
-                plan.append({
 
-                    "plugin": current_plugin,
-
-                    "args": current_args,
-
-                    "delay": delay
-
-                })
-
-                continue
-
-            #
-            # Context-aware planning
-            #
-
-            words = task_text.lower().split()
-
-            if current_plugin:
-
-                if "again" in words:
-
-                    plan.append({
-
-                        "plugin": current_plugin,
-
-                        "args": current_args,
-
-                        "delay": delay
-
-                    })
-
-                    continue
-
-            if current_plugin == "torch":
-
-                if "off" in words:
-
-                    current_args = ["off"]
-
-                    plan.append({
-
-                        "plugin": "torch",
-
-                        "args": ["off"],
-
-                        "delay": delay
-
-                    })
-
-                    continue
-
-                if "on" in words:
-
-                    current_args = ["on"]
-
-                    plan.append({
-
-                        "plugin": "torch",
-
-                        "args": ["on"],
-
-                        "delay": delay
-
-                    })
-
-                    continue
-
-        return plan
-
-    #
-    # AI Reply
-    #
 
     def reply(self, text):
 
-        text = text.strip()
+        tasks = self.plan(text)
 
-        if not text:
 
-            return None, None
+        if len(tasks) > 1:
 
-        self.session["history"].append(text)
-
-        #
-        # Multi-command planning
-        #
-
-        plan = self.plan(text)
-
-        if len(plan) > 1:
-
-            if plan:
-
-                last = plan[-1]
-
-                self.set_context(
-                    last["plugin"],
-                    last["args"]
-                )
-
-            return "__multi__", plan
-
-        if len(plan) == 1:
-
-            step = plan[0]
-
-            self.set_context(
-                step["plugin"],
-                step["args"]
+            return (
+                "__multi__",
+                tasks
             )
 
-            return step["plugin"], step["args"]
 
-        #
-        # Conversation Context
-        #
+        if len(tasks) == 1:
 
-        words = text.lower().split()
+            task = tasks[0]
 
-        plugin, args = self.get_context()
+            return (
+                task.get("plugin"),
+                task.get("args", [])
+            )
 
-        if plugin:
 
-            if "again" in words:
+        return (
+            None,
+            []
+        )
 
-                return plugin, args
-
-            if plugin == "torch":
-
-                if "off" in words:
-
-                    self.set_context(
-                        "torch",
-                        ["off"]
-                    )
-
-                    return "torch", ["off"]
-
-                if "on" in words:
-
-                    self.set_context(
-                        "torch",
-                        ["on"]
-                    )
-
-                    return "torch", ["on"]
-
-        return None, None
-
-    #
-    # Memory
-    #
-
-    def remember(self, key, value):
-
-        save_memory(key, value)
-
-    def recall(self, key):
-
-        return load_memory(key)
-
-    #
-    # History
-    #
-
-    def last(self):
-
-        history = self.session["history"]
-
-        if not history:
-
-            return None
-
-        return history[-1]
-
-    def clear(self):
-
-        self.session = {
-
-            "history": [],
-
-            "last_plugin": None,
-
-            "last_args": []
-
-        }
 
 
 jarvis = Jarvis()

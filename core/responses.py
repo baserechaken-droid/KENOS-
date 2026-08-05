@@ -1,41 +1,32 @@
-import re
+RESPONSES = {
 
+    "battery": {
+        "prefix": "Battery status checked."
+    },
 
-def format_for_speech(text):
+    "time": {
+        "prefix": "The current time is."
+    },
 
-    if not text:
-        return ""
+    "torch_on": {
+        "text": "Flashlight activated."
+    },
 
-    speech = text
+    "torch_off": {
+        "text": "Flashlight switched off."
+    },
 
-    # Remove emojis
-    speech = re.sub(
-        r"[^\w\s.,:%/-]",
-        "",
-        speech
-    )
-
-    # Improve common phrases
-    replacements = {
-
-        "Battery:": "Your battery is",
-
-        "Status:": "and the status is",
-
-        "Flashlight ON": "I've turned on the flashlight.",
-
-        "Flashlight OFF": "I've turned off the flashlight.",
-
-        "Time:": "The current time is",
-
-        "Date:": "Today's date is",
-
+    "shutdown": {
+        "text": "KenOS shutting down."
     }
 
-    for old, new in replacements.items():
+}
 
-        speech = speech.replace(old, new)
 
-    speech = " ".join(speech.split())
 
-    return speech
+def get_response(key, default=None):
+
+    return RESPONSES.get(
+        key,
+        default
+    )
