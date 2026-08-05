@@ -8,3 +8,6 @@ venv/
 # KenOS runtime files
 logs/
 backups/
+
+# Local backups
+backups/
