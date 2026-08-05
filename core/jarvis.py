@@ -1,6 +1,7 @@
 from core.chat import reply as chat_reply
 from core.context import context
 from core.intents import detect
+from core.plugin_ai import best_plugin
 from core.planner import split_tasks
 
 
@@ -10,14 +11,46 @@ class Jarvis:
 
         context.remember(plugin, args)
 
+
     def plan(self, text):
 
         return split_tasks(text)
 
-    def reply(self, text):
+
+    def ai_route(self, text):
 
         #
-        # Chat responses
+        # Natural language intents
+        #
+
+        intent = detect(text)
+
+        if intent:
+
+            return intent
+
+        #
+        # AI plugin ranking
+        #
+
+        plugin = best_plugin(text)
+
+        if plugin:
+
+            return (
+                plugin,
+                []
+            )
+
+        return None
+
+
+    def reply(self, text):
+
+        text = text.strip()
+
+        #
+        # Conversation
         #
 
         answer = chat_reply(text)
@@ -30,7 +63,7 @@ class Jarvis:
             )
 
         #
-        # Context follow-up
+        # Context memory
         #
 
         follow = context.resolve_followup(text)
@@ -40,14 +73,14 @@ class Jarvis:
             return follow
 
         #
-        # Intent detection
+        # AI routing
         #
 
-        intent = detect(text)
+        route = self.ai_route(text)
 
-        if intent:
+        if route:
 
-            return intent
+            return route
 
         #
         # Planner
@@ -78,6 +111,17 @@ class Jarvis:
 
             if "text" in task:
 
+                plugin = best_plugin(
+                    task["text"]
+                )
+
+                if plugin:
+
+                    return (
+                        plugin,
+                        []
+                    )
+
                 return (
                     task["text"],
                     []
@@ -90,4 +134,3 @@ class Jarvis:
 
 
 jarvis = Jarvis()
-
