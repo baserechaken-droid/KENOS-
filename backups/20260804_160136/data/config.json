@@ -1,9 +1,0 @@
-{
-    "assistant_name": "Jarvis",
-    "user_name": "Ken",
-    "voice": true,
-    "startup_message": true,
-    "history": true,
-    "theme": "default",
-    "version": "7.0.0-alpha"
-}
