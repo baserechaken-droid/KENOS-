@@ -9,47 +9,29 @@ from core.logo import show as show_logo
 from services.scheduler import run as scheduler
 from services.notification_service import run as notification
 
-import platform
 from datetime import datetime
+import platform
 
 
 VERSION = "10 AI Edition"
 
 
-def banner():
+def boot_screen():
 
+    # logo.py already contains the full themed boot animation
     show_logo()
 
-    print()
-    print("        Android AI Operating System")
-    print(f"             Version {VERSION}")
-    print()
 
-    print("Initializing AI Engine...")
-    print("[████████████████████████████████] 100%")
-    print()
-
-    print("Loading Plugins...")
-    print("[████████████████████████████████] 100%")
-    print()
-
-    print("Starting Services...")
-    print("[████████████████████████████████] 100%")
-    print()
-
-    print("Preparing Voice Assistant...")
-    print("[████████████████████████████████] 100%")
-    print()
-
-
-def system_info():
+def system_status():
 
     now = datetime.now()
 
-    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    print(
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    )
 
     print(
-        f"✓ System      : Android"
+        "✓ System      : Android 16"
     )
 
     print(
@@ -68,21 +50,31 @@ def system_info():
         "✓ Status      : READY"
     )
 
-    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    print(
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    )
+
     print()
 
 
 def startup():
 
-    banner()
+    boot_screen()
+
+    print()
+    print("Running startup diagnostics...")
+    print()
 
     startup_check()
 
     load_plugins()
 
+    print()
+
     print(
         f"✓ Plugins Loaded : {len(get_skills())}"
     )
+
 
     register(
         "scheduler",
@@ -94,24 +86,34 @@ def startup():
         notification
     )
 
+
     start("scheduler")
     start("notification")
 
-    system_info()
 
-    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    system_status()
+
+
+    print(
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    )
+
     print("✓ System Ready")
     print("✓ AI Engine Ready")
-    print(f"✓ AI Skills      : {len(get_skills())}")
+    print(
+        f"✓ AI Skills      : {len(get_skills())}"
+    )
     print("✓ Voice Engine   : Ready")
     print("✓ Scheduler      : Running")
     print("✓ Notifications  : Running")
-    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+    print(
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    )
 
     print()
 
     print("🤖 Jarvis Online")
-
     print()
 
     print("Commands:")
@@ -149,7 +151,6 @@ def main():
 
                 print()
                 print("🤖 Jarvis shutting down...")
-                print("Goodbye!")
                 break
 
 
@@ -162,7 +163,6 @@ def main():
 
             print()
             print("🤖 Jarvis shutting down...")
-            print("Goodbye!")
             break
 
 
