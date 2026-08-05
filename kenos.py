@@ -9,6 +9,8 @@ from core.logo import show as show_logo
 from services.scheduler import run as scheduler
 from services.notification_service import run as notification
 
+from services.voice.engine import voice
+
 from datetime import datetime
 import platform
 
@@ -20,6 +22,7 @@ def boot_screen():
 
     # logo.py already contains the full themed boot animation
     show_logo()
+
 
 
 def system_status():
@@ -57,6 +60,7 @@ def system_status():
     print()
 
 
+
 def startup():
 
     boot_screen()
@@ -81,6 +85,7 @@ def startup():
         scheduler
     )
 
+
     register(
         "notification",
         notification
@@ -88,6 +93,7 @@ def startup():
 
 
     start("scheduler")
+
     start("notification")
 
 
@@ -100,9 +106,11 @@ def startup():
 
     print("✓ System Ready")
     print("✓ AI Engine Ready")
+
     print(
         f"✓ AI Skills      : {len(get_skills())}"
     )
+
     print("✓ Voice Engine   : Ready")
     print("✓ Scheduler      : Running")
     print("✓ Notifications  : Running")
@@ -114,15 +122,30 @@ def startup():
     print()
 
     print("🤖 Jarvis Online")
+
+    # Jarvis startup voice
+    try:
+
+        voice.speak(
+            "Welcome back Ken. KenOS systems are online and ready."
+        )
+
+    except:
+
+        pass
+
+
     print()
 
     print("Commands:")
+
     print("  help     - Show commands")
     print("  listen   - Single voice command")
     print("  voice    - Continuous voice mode")
     print("  exit     - Shutdown KenOS")
 
     print()
+
 
 
 def main():
@@ -150,7 +173,22 @@ def main():
             ):
 
                 print()
-                print("🤖 Jarvis shutting down...")
+
+                try:
+
+                    voice.speak(
+                        "KenOS shutting down. Goodbye Ken."
+                    )
+
+                except:
+
+                    pass
+
+
+                print(
+                    "🤖 Jarvis shutting down..."
+                )
+
                 break
 
 
@@ -162,7 +200,22 @@ def main():
         except KeyboardInterrupt:
 
             print()
-            print("🤖 Jarvis shutting down...")
+
+            try:
+
+                voice.speak(
+                    "KenOS shutting down."
+                )
+
+            except:
+
+                pass
+
+
+            print(
+                "🤖 Jarvis shutting down..."
+            )
+
             break
 
 
@@ -171,6 +224,7 @@ def main():
             print(
                 f"[ERROR] {e}"
             )
+
 
 
 if __name__ == "__main__":
