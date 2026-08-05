@@ -1,167 +1,144 @@
 import re
 
 
-RULES = [
+def detect(text):
+
+    text = text.lower().strip()
+
+    #
+    # Remember
+    #
+
+    m = re.match(
+        r"remember (?:that )?my (.+?) is (.+)",
+        text
+    )
+
+    if m:
+
+        return (
+            "remember",
+            [
+                m.group(1).strip(),
+                m.group(2).strip()
+            ]
+        )
+
+    #
+    # Recall
+    #
+
+    m = re.match(
+        r"(?:what is|what's|whats) my (.+)",
+        text
+    )
+
+    if m:
+
+        return (
+            "recall",
+            [
+                m.group(1).strip()
+            ]
+        )
+
+    #
+    # Forget
+    #
+
+    m = re.match(
+        r"forget (?:my )?(.+)",
+        text
+    )
+
+    if m:
+
+        return (
+            "forget",
+            [
+                m.group(1).strip()
+            ]
+        )
 
     #
     # Time
     #
 
-    (
-        [
-            r"what('?s| is)? the time",
-            r"tell me the time",
-            r"time now",
-            r"current time",
-            r"^time$"
-        ],
-        "time",
-        []
-    ),
+    if re.search(
+        r"(what('?s| is)? the time|time now|current time)",
+        text
+    ):
+
+        return ("time", [])
 
     #
     # Date
     #
 
-    (
-        [
-            r"today('?s)? date",
-            r"current date",
-            r"what('?s| is)? the date",
-            r"^date$"
-        ],
-        "date",
-        []
-    ),
+    if re.search(
+        r"(today('?s)? date|current date|what('?s| is)? the date)",
+        text
+    ):
+
+        return ("date", [])
 
     #
     # Battery
     #
 
-    (
-        [
-            r"battery",
-            r"battery level",
-            r"battery percentage",
-            r"battery status",
-            r"how much battery",
-            r"how much charge"
-        ],
-        "battery",
-        []
-    ),
+    if "battery" in text:
+
+        return ("battery", [])
 
     #
     # Dashboard
     #
 
-    (
-        [
-            r"dashboard",
-            r"show dashboard",
-            r"open dashboard"
-        ],
-        "dashboard",
-        []
-    ),
+    if "dashboard" in text:
 
-    #
-    # Status
-    #
-
-    (
-        [
-            r"status",
-            r"system status",
-            r"device status"
-        ],
-        "status",
-        []
-    ),
+        return ("dashboard", [])
 
     #
     # Torch ON
     #
 
-    (
-        [
-            r"(turn|switch|enable|activate).*(flashlight|flash light|torch|lamp)",
-            r"(flashlight|flash light|torch|lamp).*(on)"
-        ],
-        "torch",
-        ["on"]
-    ),
+    if (
+        ("flash" in text or "torch" in text)
+        and any(
+            w in text for w in (
+                "turn on",
+                "switch on",
+                "enable",
+                "activate"
+            )
+        )
+    ):
+
+        return (
+            "torch",
+            ["on"]
+        )
 
     #
     # Torch OFF
     #
 
-    (
-        [
-            r"(turn|switch|disable|deactivate).*(off).*(flashlight|flash light|torch|lamp)",
-            r"(turn|switch|disable|deactivate).*(flashlight|flash light|torch|lamp).*(off)"
-        ],
-        "torch",
-        ["off"]
-    ),
+    if (
+        ("flash" in text or "torch" in text)
+        and any(
+            w in text for w in (
+                "turn off",
+                "switch off",
+                "disable",
+                "deactivate"
+            )
+        )
+    ):
 
-    #
-    # WiFi
-    #
-
-    (
-        [
-            r"wifi",
-            r"wi-fi",
-            r"wireless"
-        ],
-        "wifi",
-        []
-    ),
-
-    #
-    # Volume
-    #
-
-    (
-        [
-            r"volume up",
-            r"increase volume",
-            r"raise volume",
-            r"louder"
-        ],
-        "volume",
-        ["up"]
-    ),
-
-    (
-        [
-            r"volume down",
-            r"decrease volume",
-            r"lower volume",
-            r"quieter"
-        ],
-        "volume",
-        ["down"]
-    )
-
-]
-
-
-def detect(text):
-
-    text = text.lower().strip()
-
-    for patterns, plugin, args in RULES:
-
-        for pattern in patterns:
-
-            if re.search(pattern, text):
-
-                return (
-                    plugin,
-                    args
-                )
+        return (
+            "torch",
+            ["off"]
+        )
 
     return None
 
