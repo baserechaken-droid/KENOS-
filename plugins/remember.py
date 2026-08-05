@@ -1,30 +1,13 @@
-import json
-import os
+from core.memory import memory
 
 NAME = "remember"
-DESCRIPTION = "Store a memory"
+DESCRIPTION = "Remember information"
 
-FILE = "data/memory.json"
-
-
-def load():
-
-    if not os.path.exists(FILE):
-
-        return {}
-
-    with open(FILE, "r") as f:
-
-        return json.load(f)
-
-
-def save(data):
-
-    os.makedirs("data", exist_ok=True)
-
-    with open(FILE, "w") as f:
-
-        json.dump(data, f, indent=4)
+SKILLS = [
+    "remember",
+    "save",
+    "store"
+]
 
 
 def run(args):
@@ -32,17 +15,15 @@ def run(args):
     if len(args) < 2:
 
         print("Usage: remember <key> <value>")
-
         return
 
     key = args[0]
 
     value = " ".join(args[1:])
 
-    data = load()
-
-    data[key] = value
-
-    save(data)
+    memory.remember(key, value)
 
     print(f"✓ Remembered '{key}'.")
+
+    return f"I'll remember your {key}."
+
