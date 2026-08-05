@@ -9,172 +9,114 @@ except Exception:
     voice = None
 
 
-
 def speak(text):
 
     if not text:
         return
 
     try:
-
         if voice:
-            voice.speak(
-                str(text)
-            )
-
-    except:
-
+            voice.speak(str(text))
+    except Exception:
         pass
-
 
 
 def run_plugin(plugin, args):
 
-    jarvis.set_context(
-        plugin,
-        args
-    )
+    if hasattr(jarvis, "set_context"):
 
+        try:
+            jarvis.set_context(plugin, args)
+        except Exception:
+            pass
 
-    result = execute(
-        plugin,
-        args
-    )
-
+    result = execute(plugin, args)
 
     if isinstance(result, str) and result.strip():
 
-        print(
-            "🤖 Jarvis:",
-            result
-        )
+        print(f"🤖 Jarvis: {result}")
 
-        speak(
-            result
-        )
-
+        speak(result)
 
     return result
 
 
-
 def run_plan(plan):
+
+    if not isinstance(plan, list):
+        return
 
     for step in plan:
 
-        delay = step.get(
-            "delay",
-            0
-        )
+        if not isinstance(step, dict):
+            continue
 
+        plugin = step.get("plugin")
+
+        if not plugin:
+            continue
+
+        args = step.get("args", [])
+        delay = step.get("delay", 0)
+
+        print(f"🤖 Jarvis → {plugin}")
+
+        run_plugin(plugin, args)
 
         if delay > 0:
 
-            print(
-                f"⏳ Waiting {delay} second(s)..."
-            )
+            print(f"⏳ Waiting {delay} second(s)...")
 
             time.sleep(delay)
-
-
-        plugin = step.get(
-            "plugin"
-        )
-
-        args = step.get(
-            "args",
-            []
-        )
-
-
-        print(
-            f"🤖 Jarvis → {plugin}"
-        )
-
-
-        run_plugin(
-            plugin,
-            args
-        )
-
 
 
 def process(text):
 
     text = text.strip()
 
-
     if not text:
         return
-
-
 
     words = text.split()
 
     command = words[0].lower()
 
-
-
-    if exists(command) and len(words) == 1:
-
-        run_plugin(
-            command,
-            []
-        )
-
-        return
-
-
-
-    plugin, data = jarvis.reply(text)
-
-
-
-    if plugin == "__multi__":
-
-        print(
-            "🧠 Planning..."
-        )
-
-        run_plan(
-            data
-        )
-
-        return
-
-
-
-    if plugin:
-
-        run_plugin(
-            plugin,
-            data
-        )
-
-        return
-
-
+    #
+    # Execute registered plugins FIRST.
+    #
 
     if exists(command):
 
-        run_plugin(
-            command,
-            words[1:]
-        )
+        run_plugin(command, words[1:])
 
         return
 
+    #
+    # AI processing.
+    #
 
+    plugin, data = jarvis.reply(text)
 
-    message = (
-        "Sorry Ken, I did not understand that command."
-    )
+    if plugin == "__multi__":
 
-    print(
-        "🤖 Jarvis:",
-        message
-    )
+        print("🧠 Planning...")
 
-    speak(
-        message
-    )
+        run_plan(data)
+
+        return
+
+    if plugin:
+
+        run_plugin(plugin, data)
+
+        return
+
+    #
+    # Unknown command.
+    #
+
+    message = "Sorry Ken, I did not understand that command."
+
+    print(f"🤖 Jarvis: {message}")
+
+    speak(message)

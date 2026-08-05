@@ -1,14 +1,47 @@
+from services.voice.engine import voice
+
+
 class Assistant:
 
     def __init__(self):
 
         self.name = "Jarvis"
+        self.owner = "Ken"
+        self.awake = True
 
-        self.last_plugin = None
+    def greet(self):
 
-        self.last_args = []
+        message = (
+            "Welcome back Ken. "
+            "KenOS is online and ready."
+        )
 
-        self.mode = "normal"
+        print(f"🤖 {self.name}: {message}")
+
+        try:
+            voice.speak(message)
+        except:
+            pass
+
+    def acknowledge(self):
+
+        message = "Yes Ken?"
+
+        print(f"🤖 {self.name}: {message}")
+
+        try:
+            voice.speak(message)
+        except:
+            pass
+
+    def confirm(self, text):
+
+        print(f"🤖 {self.name}: {text}")
+
+        try:
+            voice.speak(text)
+        except:
+            pass
 
 
 assistant = Assistant()

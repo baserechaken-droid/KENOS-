@@ -1,15 +1,28 @@
-from core.device import Device
+from services.voice.engine import voice
 
 NAME = "speak"
-DESCRIPTION = "Speak text"
+DESCRIPTION = "Make Jarvis speak text"
+
+SKILLS = [
+    "speak",
+    "say",
+    "talk",
+    "repeat"
+]
 
 
 def run(args):
 
     if not args:
-        print("Usage: speak <text>")
+
+        print("Usage:")
+        print("  speak Hello Ken")
         return
 
-    text = " ".join(args)
+    message = " ".join(args)
 
-    Device.speak(text)
+    print(f"🗣 {message}")
+
+    voice.speak(message)
+
+    return message

@@ -2,48 +2,56 @@ from core.voice import listen, speak
 from core.router import process
 
 NAME = "listen"
-DESCRIPTION = "Listen for voice commands"
+DESCRIPTION = "Voice recognition"
 
 SKILLS = [
     "listen",
     "voice",
     "microphone",
-    "mic"
+    "mic",
+    "jarvis"
 ]
-
 
 EXIT_WORDS = {
     "exit",
     "quit",
-    "goodbye",
     "bye",
+    "goodbye",
+    "stop",
     "stop listening",
-    "stop"
+    "cancel"
 }
+
+
+def banner():
+
+    print()
+    print("══════════════════════════════════════")
+    print("🎤        JARVIS VOICE MODE")
+    print("══════════════════════════════════════")
+    print("Say 'stop listening' to exit.")
+    print()
 
 
 def run(args):
 
-    mode = " ".join(args).lower()
+    mode = " ".join(args).lower().strip()
 
-    # -----------------------------
+    #
     # Continuous voice mode
-    # -----------------------------
+    #
+
     if mode in (
+        "",
         "loop",
         "continuous",
         "voice",
         "conversation"
     ):
 
-        print()
-        print("===================================")
-        print("     🎤 Jarvis Voice Mode")
-        print("===================================")
-        print("Say 'goodbye' to exit.")
-        print()
+        banner()
 
-        speak("Voice mode activated.")
+        speak("Jarvis voice mode activated.")
 
         while True:
 
@@ -53,39 +61,54 @@ def run(args):
 
             if not command:
 
-                speak("I didn't hear anything.")
+                print("⚠ No speech detected.")
+                speak("Please repeat.")
                 continue
 
-            print(f"🎤 You said: {command}")
+            command = command.strip()
 
-            if command.lower().strip() in EXIT_WORDS:
+            print(f"🗣 You: {command}")
 
-                speak("Goodbye.")
+            if command.lower() in EXIT_WORDS:
 
+                speak("Voice mode terminated.")
+
+                print()
                 print("👋 Voice mode ended.")
-
                 print()
 
                 break
 
-            process(command)
+            try:
+
+                process(command)
+
+            except Exception as e:
+
+                print(f"[ERROR] {e}")
+
+                speak("An error occurred.")
 
         return
 
-    # -----------------------------
-    # Original one-shot mode
-    # -----------------------------
+    #
+    # Single command mode
+    #
+
+    print("🎤 Listening...")
 
     command = listen()
 
     if not command:
 
-        speak("I didn't hear anything.")
+        print("⚠ No speech detected.")
 
-        print("🤖 I didn't hear anything.")
+        speak("I didn't hear anything.")
 
         return
 
-    print(f"🎤 You said: {command}")
+    command = command.strip()
+
+    print(f"🗣 You: {command}")
 
     process(command)

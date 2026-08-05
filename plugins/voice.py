@@ -1,51 +1,48 @@
 from services.voice.engine import voice
 
-
 NAME = "voice"
-DESCRIPTION = "Control Jarvis voice"
+DESCRIPTION = "Manage Jarvis voice"
 
+SKILLS = [
+    "voice",
+    "speaker",
+    "speech",
+    "talk"
+]
 
 
 def run(args):
 
     if not args:
 
-        print(voice.status())
+        cfg = voice.status()
+
+        print()
+        print("🎙 KenOS Voice Settings")
+        print("----------------------------")
+        print(f"Enabled : {cfg.get('enabled')}")
+        print(f"Profile : {cfg.get('voice')}")
+        print(f"Speed   : {cfg.get('speed')}")
+        print(f"Pitch   : {cfg.get('pitch')}")
+        print()
+        print("Available voices:")
+        print("  jarvis")
+        print("  david")
+        print("  friday")
+        print("  fast")
+        print("  silent")
         return
 
+    profile = args[0].lower()
 
-    command = args[0]
+    if not voice.set_voice(profile):
 
+        print("Unknown voice profile.")
+        return
 
-    if command == "test":
+    voice.reload()
 
-        voice.speak(
-            "Hello Ken. Jarvis voice engine is online."
-        )
+    print(f"✅ Voice changed to {profile}")
 
-        print(
-            "🔊 Voice test completed"
-        )
-
-
-    elif command == "on":
-
-        voice.settings["enabled"] = True
-        print(
-            "🔊 Jarvis voice enabled"
-        )
-
-
-    elif command == "off":
-
-        voice.settings["enabled"] = False
-        print(
-            "🔇 Jarvis voice disabled"
-        )
-
-
-    else:
-
-        print(
-            "voice commands: test, on, off"
-        )
+    if profile != "silent":
+        voice.speak(f"Hello Ken. Voice changed to {profile}.")

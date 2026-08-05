@@ -1,0 +1,99 @@
+import json
+import os
+import subprocess
+
+CONFIG = "data/voice.json"
+
+DEFAULT = {
+    "enabled": True,
+    "voice": "jarvis",
+    "speed": 1.0,
+    "pitch": 1.0
+}
+
+
+class VoiceEngine:
+
+    def __init__(self):
+        self.reload()
+
+    def reload(self):
+        self.settings = self.load()
+
+    def load(self):
+
+        os.makedirs("data", exist_ok=True)
+
+        if not os.path.exists(CONFIG):
+
+            with open(CONFIG, "w") as f:
+                json.dump(DEFAULT, f, indent=4)
+
+            return DEFAULT.copy()
+
+        try:
+
+            with open(CONFIG) as f:
+                cfg = json.load(f)
+
+            for k, v in DEFAULT.items():
+                cfg.setdefault(k, v)
+
+            return cfg
+
+        except:
+
+            return DEFAULT.copy()
+
+    def save(self):
+
+        with open(CONFIG, "w") as f:
+            json.dump(self.settings, f, indent=4)
+
+    def set_voice(self, name):
+
+        voices = {
+            "jarvis": {"speed": 0.90, "pitch": 0.82},
+            "david": {"speed": 1.00, "pitch": 1.00},
+            "friday": {"speed": 1.05, "pitch": 1.25},
+            "fast": {"speed": 1.45, "pitch": 1.00},
+            "silent": {"speed": 1.00, "pitch": 1.00}
+        }
+
+        if name not in voices:
+            return False
+
+        self.settings["voice"] = name
+        self.settings["enabled"] = (name != "silent")
+        self.settings["speed"] = voices[name]["speed"]
+        self.settings["pitch"] = voices[name]["pitch"]
+
+        self.save()
+        return True
+
+    def speak(self, text):
+
+        if not self.settings.get("enabled", True):
+            return
+
+        try:
+
+            subprocess.run(
+                [
+                    "termux-tts-speak",
+                    "-r", str(self.settings["speed"]),
+                    "-p", str(self.settings["pitch"]),
+                    str(text)
+                ],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+
+        except:
+            pass
+
+    def status(self):
+        return dict(self.settings)
+
+
+voice = VoiceEngine()

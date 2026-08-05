@@ -1,69 +1,82 @@
 import time
 
+from themes.theme_manager import get_theme
 
-# KenOS Theme Colors
 RESET = "\033[0m"
-GREEN = "\033[92m"
-CYAN = "\033[96m"
-BLUE = "\033[94m"
-YELLOW = "\033[93m"
+
+THEMES = {
+    "matrix": {
+        "primary": "\033[92m",
+        "secondary": "\033[96m",
+        "accent": "\033[94m"
+    },
+    "cyber": {
+        "primary": "\033[95m",
+        "secondary": "\033[96m",
+        "accent": "\033[94m"
+    },
+    "ironman": {
+        "primary": "\033[91m",
+        "secondary": "\033[93m",
+        "accent": "\033[97m"
+    },
+    "ubuntu": {
+        "primary": "\033[91m",
+        "secondary": "\033[97m",
+        "accent": "\033[93m"
+    },
+    "minimal": {
+        "primary": "\033[97m",
+        "secondary": "\033[37m",
+        "accent": "\033[90m"
+    }
+}
+
+
+def colors():
+
+    theme = get_theme().lower()
+
+    return THEMES.get(theme, THEMES["matrix"])
 
 
 def progress(message):
 
+    c = colors()
+
     print()
 
-    print(
-        f"{CYAN}{message}{RESET}"
-    )
+    print(f"{c['secondary']}{message}{RESET}")
 
-    time.sleep(0.3)
+    time.sleep(0.30)
 
-    print(
-        f"{GREEN}[████████████████████████████████] 100%{RESET}"
-    )
+    print(f"{c['primary']}[████████████████████████████████] 100%{RESET}")
 
 
 def show():
 
+    c = colors()
+
     print()
 
     print(
-f"""
-{GREEN}
+f"""{c['primary']}
 ██╗  ██╗███████╗███╗   ██╗ ██████╗ ███████╗
 ██║ ██╔╝██╔════╝████╗  ██║██╔═══██╗██╔════╝
 █████╔╝ █████╗  ██╔██╗ ██║██║   ██║███████╗
 ██╔═██╗ ██╔══╝  ██║╚██╗██║██║   ██║╚════██║
 ██║  ██╗███████╗██║ ╚████║╚██████╔╝███████║
 ╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝
-{RESET}
-"""
+{RESET}"""
     )
 
+    print(f"{c['secondary']}        Android AI Operating System{RESET}")
 
-    print(
-        f"{CYAN}        Android AI Operating System{RESET}"
-    )
+    print(f"{c['accent']}             Version 10 AI Edition{RESET}")
 
-    print(
-        f"{BLUE}             Version 10 AI Edition{RESET}"
-    )
-
-    progress(
-        "Initializing AI Engine..."
-    )
-
-    progress(
-        "Loading Plugins..."
-    )
-
-    progress(
-        "Starting Services..."
-    )
-
-    progress(
-        "Preparing Voice Assistant..."
-    )
+    progress("Initializing AI Engine...")
+    progress("Loading Plugins...")
+    progress("Starting Services...")
+    progress("Preparing Voice Assistant...")
 
     print()
