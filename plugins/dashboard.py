@@ -1,24 +1,26 @@
 import platform
 import subprocess
 import json
+import time
 from datetime import datetime
 
 from plugin_loader import get_skills
 
 
 NAME = "dashboard"
-DESCRIPTION = "Show KenOS live dashboard"
+DESCRIPTION = "Show KenOS live system dashboard"
 
 
-def read_file(path):
+
+def command(cmd):
 
     try:
-
-        with open(path, "r") as f:
-            return f.read().strip()
+        return subprocess.check_output(
+            cmd,
+            stderr=subprocess.DEVNULL
+        ).decode().strip()
 
     except:
-
         return None
 
 
@@ -27,77 +29,129 @@ def battery():
 
     try:
 
-        result = subprocess.check_output(
-            ["termux-battery-status"]
-        )
-
         data = json.loads(
-            result.decode()
+            command(
+                ["termux-battery-status"]
+            )
         )
 
-        return (
-            str(data.get("percentage", "N/A"))
-            + "%"
-        )
+        return str(
+            data.get("percentage")
+        ) + "%"
 
     except:
 
-        paths = [
-            "/sys/class/power_supply/battery/capacity",
-            "/sys/class/power_supply/BAT0/capacity"
-        ]
-
-        for path in paths:
-
-            value = read_file(path)
-
-            if value:
-
-                return value + "%"
-
-    return "N/A"
+        return "N/A"
 
 
 
 def memory():
 
-    data = read_file(
-        "/proc/meminfo"
-    )
+    try:
 
-    if not data:
+        data = open(
+            "/proc/meminfo"
+        ).read()
+
+
+        total = 0
+        available = 0
+
+
+        for line in data.splitlines():
+
+            if line.startswith("MemTotal"):
+                total = int(line.split()[1])
+
+            if line.startswith("MemAvailable"):
+                available = int(line.split()[1])
+
+
+        return (
+            f"{(total-available)//1024}MB/"
+            f"{total//1024}MB"
+        )
+
+    except:
 
         return "N/A"
 
 
-    total = 0
-    available = 0
+
+def cpu():
+
+    try:
+
+        first = open(
+            "/proc/stat"
+        ).readline().split()
 
 
-    for line in data.splitlines():
-
-        if line.startswith("MemTotal"):
-
-            total = int(
-                line.split()[1]
-            )
-
-
-        if line.startswith("MemAvailable"):
-
-            available = int(
-                line.split()[1]
-            )
-
-
-    if total:
-
-        used = total - available
-
-        return (
-            f"{used // 1024}MB / "
-            f"{total // 1024}MB"
+        idle1 = int(first[4])
+        total1 = sum(
+            map(int, first[1:8])
         )
+
+
+        time.sleep(0.5)
+
+
+        second = open(
+            "/proc/stat"
+        ).readline().split()
+
+
+        idle2 = int(second[4])
+        total2 = sum(
+            map(int, second[1:8])
+        )
+
+
+        diff_total = total2-total1
+        diff_idle = idle2-idle1
+
+
+        usage = (
+            100 *
+            (diff_total-diff_idle)
+            /
+            diff_total
+        )
+
+
+        return f"{usage:.1f}%"
+
+    except:
+
+        return "N/A"
+
+
+
+def storage():
+
+    try:
+
+        result = command(
+            ["df","-h","/data"]
+        )
+
+        if result:
+
+            line = result.splitlines()[1]
+
+            parts = line.split()
+
+            return (
+                parts[2]
+                +
+                "/"
+                +
+                parts[1]
+            )
+
+    except:
+
+        pass
 
 
     return "N/A"
@@ -106,17 +160,18 @@ def memory():
 
 def uptime():
 
-    value = read_file(
-        "/proc/uptime"
-    )
+    try:
 
-    if value:
+        result = command(
+            ["cat","/proc/uptime"]
+        )
 
-        try:
+
+        if result:
 
             seconds = int(
                 float(
-                    value.split()[0]
+                    result.split()[0]
                 )
             )
 
@@ -126,27 +181,24 @@ def uptime():
                 seconds % 3600
             ) // 60
 
+
             return f"{hours}h {minutes}m"
 
-        except:
 
-            pass
+    except:
+
+        pass
 
 
     try:
 
-        result = subprocess.check_output(
-            ["uptime"]
-        ).decode()
+        result = command(
+            ["termux-battery-status"]
+        )
 
+        if result:
 
-        if "up" in result:
-
-            part = result.split("up")[1]
-
-            part = part.split(",")[0]
-
-            return part.strip()
+            return "Running"
 
 
     except:
@@ -158,6 +210,27 @@ def uptime():
 
 
 
+def network():
+
+    try:
+
+        info = command(
+            ["termux-wifi-connectioninfo"]
+        )
+
+        if info:
+
+            return "WIFI"
+
+    except:
+
+        pass
+
+
+    return "OFFLINE"
+
+
+
 def run(args):
 
     now = datetime.now()
@@ -165,32 +238,19 @@ def run(args):
 
     print()
 
-    print(
-        "╭────────────────────────────────────────────╮"
-    )
+    print("╭────────────────────────────────────────────╮")
+    print("│          KenOS v10.1 AI Dashboard           │")
+    print("├────────────────────────────────────────────┤")
 
-    print(
-        "│          KenOS v10 AI Dashboard            │"
-    )
-
-    print(
-        "├────────────────────────────────────────────┤"
-    )
-
-    print(
-        "│ 🤖 Jarvis       : ONLINE                   │"
-    )
-
-    print(
-        "│ 🧠 AI Engine    : READY                    │"
-    )
+    print("│ 🤖 Jarvis       : ONLINE                   │")
+    print("│ 🧠 AI Engine    : READY                    │")
 
     print(
         f"│ 🐍 Python       : {platform.python_version():<25}│"
     )
 
     print(
-        "│ 📱 System       : Android                  │"
+        f"│ 📱 Device       : {platform.machine():<25}│"
     )
 
     print(
@@ -199,6 +259,18 @@ def run(args):
 
     print(
         f"│ 🧠 RAM          : {memory():<25}│"
+    )
+
+    print(
+        f"│ ⚙ CPU           : {cpu():<25}│"
+    )
+
+    print(
+        f"│ 💾 Storage      : {storage():<25}│"
+    )
+
+    print(
+        f"│ 🌐 Network      : {network():<25}│"
     )
 
     print(
@@ -213,8 +285,6 @@ def run(args):
         f"│ 📅 Time         : {now.strftime('%d %b %Y %H:%M'):<25}│"
     )
 
-    print(
-        "╰────────────────────────────────────────────╯"
-    )
+    print("╰────────────────────────────────────────────╯")
 
     print()
