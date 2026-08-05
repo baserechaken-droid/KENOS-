@@ -1,20 +1,44 @@
-from plugin_loader import load_plugins, get_skills
+from plugin_loader import load_plugins, get_skills, get_plugins
 from core.router import process
 from core.diagnostics import startup_check
 from core.service_manager import register, start
 from core.logger import info
+from core.logo import show as logo
+from core.prompt import prompt
+
 from services.scheduler import run as scheduler
 from services.notification_service import run as notification
 
-VERSION = "9.2 AI Edition"
+
+VERSION = "10 AI Edition"
 
 
 def banner():
 
+    logo()
+
+
+def dashboard():
+
     print()
-    print("=" * 46)
-    print(f"          KenOS {VERSION}")
-    print("=" * 46)
+    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    print("✓ System Ready")
+    print("✓ AI Engine Ready")
+    print(f"✓ Plugins Loaded : {len(get_plugins())}")
+    print(f"✓ AI Skills      : {len(get_skills())}")
+    print("✓ Voice Engine   : Ready")
+    print("✓ Scheduler      : Running")
+    print("✓ Notifications  : Running")
+    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    print()
+
+    print("🤖 Jarvis Online")
+    print()
+    print("Commands:")
+    print("  help     - Show commands")
+    print("  listen   - Single voice command")
+    print("  voice    - Continuous voice mode")
+    print("  exit     - Shutdown KenOS")
     print()
 
 
@@ -24,21 +48,22 @@ def startup():
 
     startup_check()
 
-    load_plugins()
+    plugins = load_plugins()
 
-    print(f"🧠 AI Skills Registered: {len(get_skills())}")
+    register(
+        "scheduler",
+        scheduler
+    )
 
-    register("scheduler", scheduler)
-    register("notification", notification)
+    register(
+        "notification",
+        notification
+    )
 
     start("scheduler")
     start("notification")
 
-    print()
-    print("🤖 Jarvis Online")
-    print()
-    print("Type 'help' for commands.")
-    print()
+    dashboard()
 
 
 def main():
@@ -49,25 +74,36 @@ def main():
 
         try:
 
-            text = input("[KenOS] $ ").strip()
+            text = input(prompt()).strip()
 
             if not text:
+
                 continue
 
-            if text.lower() in ("exit", "quit"):
 
-                print("Goodbye!")
+            if text.lower() in (
+                "exit",
+                "quit",
+                "shutdown"
+            ):
+
+                print()
+                print("👋 Shutting down KenOS...")
                 break
+
 
             info(text)
 
             process(text)
 
+
         except KeyboardInterrupt:
 
             print()
-            print("Goodbye!")
+            print()
+            print("👋 Shutting down KenOS...")
             break
+
 
         except Exception as e:
 
@@ -75,4 +111,5 @@ def main():
 
 
 if __name__ == "__main__":
+
     main()

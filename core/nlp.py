@@ -1,4 +1,5 @@
 import re
+
 from plugin_loader import find_skill
 
 
@@ -55,29 +56,44 @@ def parse(text):
 
     words = re.findall(r"[a-zA-Z0-9]+", text)
 
-    # First try the dynamic plugin skills
-    plugin = find_skill(text)
+    # These words belong to conversational context.
+    # Jarvis handles them using the previous command.
+    conversation_words = {
+        "again",
+        "it",
+        "that",
+        "this"
+    }
 
-    if plugin:
+    if not any(word in conversation_words for word in words):
 
-        args = words[:]
+        plugin = find_skill(text)
 
-        if args and args[0] == plugin:
-            args = args[1:]
+        if plugin:
 
-        return Intent(plugin, args)
+            args = words[:]
+
+            if args and args[0] == plugin:
+
+                args = args[1:]
+
+            return Intent(plugin, args)
 
     # Legacy compatibility
 
     if any(word in words for word in OPEN_WORDS):
 
-        args = [w for w in words if w not in OPEN_WORDS]
+        args = [
+            w for w in words
+            if w not in OPEN_WORDS
+        ]
 
         return Intent("open", args)
 
     if any(word in words for word in TORCH_WORDS):
 
         if "off" in words:
+
             return Intent("torch", ["off"])
 
         return Intent("torch", ["on"])

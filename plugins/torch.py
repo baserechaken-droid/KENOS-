@@ -5,6 +5,7 @@ DESCRIPTION = "Control flashlight"
 SKILLS = [
     "torch",
     "flashlight",
+    "flash",
     "light",
     "lamp"
 ]
@@ -16,8 +17,11 @@ def run(args):
 
     if not args:
 
-        print("Usage: torch on/off")
-        return "Say torch on or torch off."
+        message = "Usage: torch on or torch off"
+
+        print(message)
+
+        return message
 
     command = " ".join(args).lower()
 
@@ -30,9 +34,11 @@ def run(args):
                 check=False
             )
 
-            print("🔦 Flashlight ON")
+            message = "🔦 Flashlight ON"
 
-            return "Flashlight turned on."
+            print(message)
+
+            return message
 
         if "off" in command:
 
@@ -41,17 +47,25 @@ def run(args):
                 check=False
             )
 
-            print("🔦 Flashlight OFF")
+            message = "🔦 Flashlight OFF"
 
-            return "Flashlight turned off."
+            print(message)
 
-        print("Use torch on or torch off")
+            return message
 
-        return "Please say on or off."
+        message = "Use: torch on or torch off"
+
+        print(message)
+
+        return message
 
     except FileNotFoundError:
 
-        print("⚠️ Install Termux API:")
-        print("pkg install termux-api")
+        message = (
+            "Termux API is not installed.\n"
+            "Run: pkg install termux-api"
+        )
 
-        return "Termux API is not installed."
+        print(message)
+
+        return message

@@ -1,28 +1,89 @@
 from core.jarvis import jarvis
-from command_manager import execute
+from command_manager import execute, exists
 
 NAME = "jarvis"
 DESCRIPTION = "Talk to Jarvis"
 
+SKILLS = [
+    "jarvis",
+    "assistant",
+    "ai"
+]
+
+
+def handle(text):
+
+    plugin, args = jarvis.reply(text)
+
+    if not plugin:
+
+        print("🤖 I don't understand that yet.")
+        return
+
+    # Prevent Jarvis from calling itself
+    if plugin == "jarvis":
+
+        print("🤖 I'm already talking with you.")
+        return
+
+    if not exists(plugin):
+
+        print(f"🤖 Plugin '{plugin}' not found.")
+        return
+
+    print(f"🤖 Jarvis → {plugin}")
+
+    execute(plugin, args)
+
 
 def run(args):
 
-    if not args:
+    # Single command mode:
+    # jarvis what time is it
 
-        print("Usage: jarvis <message>")
+    if args:
+
+        handle(" ".join(args))
 
         return
 
-    text = " ".join(args)
+    # Interactive mode
 
-    command, arguments = jarvis.reply(text)
+    print()
+    print("===================================")
+    print("     🤖 Jarvis Conversation")
+    print("===================================")
+    print("Type 'exit' to leave.")
+    print()
 
-    if command:
+    while True:
 
-        print(f"🤖 Understood: {command}")
+        try:
 
-        execute(command, arguments)
+            text = input("You: ").strip()
 
-    else:
+            if not text:
+                continue
 
-        print("🤖 I don't understand that yet.")
+            if text.lower() in (
+                "exit",
+                "quit",
+                "bye",
+                "goodbye"
+            ):
+
+                print()
+                print("👋 Goodbye.")
+                print()
+
+                break
+
+            handle(text)
+
+        except KeyboardInterrupt:
+
+            print()
+            print("👋 Conversation ended.")
+            print()
+
+            break

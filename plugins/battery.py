@@ -17,6 +17,8 @@ def run(args):
     import json
     import os
 
+    message = None
+
     # Method 1: Termux API
     try:
 
@@ -30,18 +32,22 @@ def run(args):
 
             data = json.loads(result.stdout)
 
-            percentage = data.get("percentage", "Unknown")
+            level = data.get("percentage", "Unknown")
             status = data.get("status", "Unknown")
 
-            print(f"🔋 Battery: {percentage}%")
-            print(f"⚡ Status: {status}")
+            message = (
+                f"🔋 Battery: {level}%\n"
+                f"⚡ Status: {status}"
+            )
 
-            return f"Battery is {percentage} percent and {status.lower()}."
+            print(message)
+
+            return message
 
     except Exception:
         pass
 
-    # Method 2: Android battery sysfs
+    # Method 2: Android battery path
     paths = [
         "/sys/class/power_supply/battery/capacity",
         "/sys/class/power_supply/BAT0/capacity"
@@ -52,14 +58,21 @@ def run(args):
         if os.path.exists(path):
 
             with open(path) as f:
+
                 level = f.read().strip()
 
-            print(f"🔋 Battery: {level}%")
+            message = f"🔋 Battery: {level}%"
 
-            return f"Battery is {level} percent."
+            print(message)
 
-    print("⚠️ Battery information unavailable")
-    print("Install Termux API:")
-    print("pkg install termux-api")
+            return message
 
-    return "Battery information is unavailable."
+    message = (
+        "⚠️ Battery information unavailable\n"
+        "Install Termux API:\n"
+        "pkg install termux-api"
+    )
+
+    print(message)
+
+    return message

@@ -7,6 +7,14 @@ from command_manager import register, clear
 loaded_plugins = {}
 loaded_skills = {}
 
+DEBUG = os.getenv("KENOS_DEBUG", "0") == "1"
+
+
+def debug(message):
+
+    if DEBUG:
+        print(message)
+
 
 def load_plugins():
 
@@ -58,12 +66,15 @@ def load_plugins():
                             skill.lower().strip()
                         ] = module_name
 
-            print(f"✓ Loaded {module_name}")
+            debug(f"✓ Loaded {module_name}")
 
         except Exception as e:
 
-            print(f"[ERROR] {module_name}: {e}")
-            traceback.print_exc()
+            print(f"[ERROR] Failed to load {module_name}")
+            print(e)
+
+            if DEBUG:
+                traceback.print_exc()
 
     return loaded_plugins
 
@@ -116,11 +127,14 @@ def reload_plugin(name):
 
         register(name, module)
 
+        debug(f"✓ Reloaded {name}")
+
         return True
 
     except Exception:
 
-        traceback.print_exc()
+        if DEBUG:
+            traceback.print_exc()
 
         return False
 

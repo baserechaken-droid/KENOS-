@@ -15,10 +15,11 @@ def run(args):
 
     now = datetime.now()
 
-    current_time = now.strftime("%H:%M:%S")
-    current_date = now.strftime("%Y-%m-%d")
+    message = (
+        f"🕒 Time: {now.strftime('%H:%M:%S')}\n"
+        f"📅 Date: {now.strftime('%Y-%m-%d')}"
+    )
 
-    print(f"🕒 Time: {current_time}")
-    print(f"📅 Date: {current_date}")
+    print(message)
 
-    return f"The time is {current_time}. Today is {current_date}."
+    return message
