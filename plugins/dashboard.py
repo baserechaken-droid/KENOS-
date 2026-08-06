@@ -1,4 +1,5 @@
 import json
+import os
 import platform
 import shutil
 import subprocess
@@ -29,16 +30,20 @@ except Exception:
 
 
 NAME = "dashboard"
-DESCRIPTION = "KenOS AI live dashboard"
+DESCRIPTION = "KenOS System Dashboard"
 
 SKILLS = [
     "dashboard",
-    "system status",
     "status",
+    "system status",
     "overview",
     "health"
 ]
 
+
+# -------------------------------------------------
+# Helpers
+# -------------------------------------------------
 
 def command(cmd):
 
@@ -54,6 +59,54 @@ def command(cmd):
         return None
 
 
+def row(label, value):
+
+    value = str(value)
+
+    if len(value) > 32:
+
+        value = value[:29] + "..."
+
+    print(
+        f"║ {label:<15}: {value:<32}║"
+    )
+
+
+def line():
+
+    print(
+        "╠══════════════════════════════════════════════════════╣"
+    )
+
+
+def header():
+
+    print()
+
+    print(
+        "╔══════════════════════════════════════════════════════╗"
+    )
+
+    print(
+        "║               🤖 KenOS AI Dashboard                 ║"
+    )
+
+    line()
+
+
+def footer():
+
+    print(
+        "╚══════════════════════════════════════════════════════╝"
+    )
+
+    print()
+
+
+# -------------------------------------------------
+# Battery
+# -------------------------------------------------
+
 def battery():
 
     try:
@@ -68,10 +121,7 @@ def battery():
 
         data = json.loads(raw)
 
-        percent = data.get(
-            "percentage",
-            "?"
-        )
+        percent = data.get("percentage", "?")
 
         charging = (
             "Charging"
@@ -79,21 +129,21 @@ def battery():
             else "Battery"
         )
 
-        temperature = data.get(
+        temp = data.get(
             "temperature",
             "?"
         )
 
-        return (
-            f"{percent}% "
-            f"{charging} "
-            f"{temperature}°C"
-        )
+        return f"{percent}% {charging} {temp}°C"
 
     except Exception:
 
         return "Unavailable"
 
+
+# -------------------------------------------------
+# Network
+# -------------------------------------------------
 
 def network():
 
@@ -126,32 +176,35 @@ def network():
         return "Offline"
 
 
-def memory_usage():
+# -------------------------------------------------
+# RAM
+# -------------------------------------------------
+
+def ram():
 
     try:
 
-        info = open(
-            "/proc/meminfo"
-        ).read().splitlines()
-
         total = 0
+
         available = 0
 
-        for line in info:
+        with open("/proc/meminfo") as f:
 
-            if line.startswith("MemTotal"):
+            for line in f:
 
-                total = int(
-                    line.split()[1]
-                )
+                if line.startswith("MemTotal"):
 
-            elif line.startswith(
-                "MemAvailable"
-            ):
+                    total = int(
+                        line.split()[1]
+                    )
 
-                available = int(
-                    line.split()[1]
-                )
+                elif line.startswith(
+                    "MemAvailable"
+                ):
+
+                    available = int(
+                        line.split()[1]
+                    )
 
         used = total - available
 
@@ -165,54 +218,17 @@ def memory_usage():
         return "Unavailable"
 
 
-def cpu_usage():
-
-    try:
-
-        first = open(
-            "/proc/stat"
-        ).readline().split()
-
-        idle1 = int(first[4])
-
-        total1 = sum(
-            map(
-                int,
-                first[1:8]
-            )
-        )
-
-        time.sleep(0.3)
-
-        second = open(
-            "/proc/stat"
-        ).readline().split()
-
-        idle2 = int(second[4])
-
-        total2 = sum(
-            map(
-                int,
-                second[1:8]
-            )
-        )
-
-        total = total2 - total1
-
-        idle = idle2 - idle1
-
-        return f"{100*(total-idle)/total:.1f}%"
-
-    except Exception:
-
-        return "Unavailable"
-
+# -------------------------------------------------
+# Storage
+# -------------------------------------------------
 
 def storage():
 
     try:
 
-        total, used, free = shutil.disk_usage("/data")
+        total, used, free = shutil.disk_usage(
+            "/data"
+        )
 
         return (
             f"{used//1024//1024//1024}GB/"
@@ -223,7 +239,82 @@ def storage():
 
         return "Unavailable"
 
+# -------------------------------------------------
+# CPU
+# -------------------------------------------------
+
+def cpu():
+
+    try:
+
+        raw = command(
+            [
+                "sh",
+                "-c",
+                "top -bn1 | grep '%cpu' || top -n 1 | head -5"
+            ]
+        )
+
+        if raw:
+
+            return raw.splitlines()[0]
+
+    except Exception:
+
+        pass
+
+    try:
+
+        first = open("/proc/stat").readline().split()
+
+        idle1 = int(first[4])
+
+        total1 = sum(int(x) for x in first[1:])
+
+        time.sleep(0.2)
+
+        second = open("/proc/stat").readline().split()
+
+        idle2 = int(second[4])
+
+        total2 = sum(int(x) for x in second[1:])
+
+        total = total2 - total1
+
+        idle = idle2 - idle1
+
+        if total <= 0:
+
+            return "0%"
+
+        usage = 100 * (total - idle) / total
+
+        return f"{usage:.1f}%"
+
+    except Exception:
+
+        return "Unavailable"
+
+
+# -------------------------------------------------
+# Uptime
+# -------------------------------------------------
+
 def uptime():
+
+    try:
+
+        raw = command(
+            ["uptime"]
+        )
+
+        if raw:
+
+            return raw
+
+    except Exception:
+
+        pass
 
     try:
 
@@ -231,11 +322,11 @@ def uptime():
 
             seconds = int(float(f.read().split()[0]))
 
-        days = seconds // 86400
+        days, seconds = divmod(seconds, 86400)
 
-        hours = (seconds % 86400) // 3600
+        hours, seconds = divmod(seconds, 3600)
 
-        minutes = (seconds % 3600) // 60
+        minutes = seconds // 60
 
         if days:
 
@@ -248,123 +339,175 @@ def uptime():
         return "Unavailable"
 
 
-def plugin_count():
+# -------------------------------------------------
+# Status
+# -------------------------------------------------
+
+def plugins_loaded():
 
     try:
 
-        return str(len(get_skills()))
+        return len(get_skills())
 
     except Exception:
 
-        return "0"
+        return 0
 
 
-def scheduler_status():
+def scheduler_jobs():
 
     try:
 
         if scheduler:
 
-            return str(scheduler.running())
+            return scheduler.running()
 
     except Exception:
 
         pass
 
-    return "Unavailable"
+    return 0
 
 
-def memory_status():
+def memory_items():
 
     try:
 
-        if memory:
+        if memory and hasattr(memory, "all"):
 
-            return str(len(memory.all()))
+            return len(memory.all())
 
     except Exception:
 
         pass
 
-    return "0"
+    return 0
 
 
-def conversation_status():
+def conversation_state():
+
+    return (
+        "Active"
+        if conversation
+        else "Idle"
+    )
+
+
+def voice_state():
+
+    return (
+        "Ready"
+        if voice
+        else "Unavailable"
+    )
+
+
+def android():
+
+    version = command(
+        [
+            "getprop",
+            "ro.build.version.release"
+        ]
+    )
+
+    sdk = command(
+        [
+            "getprop",
+            "ro.build.version.sdk"
+        ]
+    )
+
+    if version and sdk:
+
+        return f"Android {version} (SDK {sdk})"
+
+    return "Unknown"
+
+
+def architecture():
+
+    return platform.machine()
+
+
+def python_version():
+
+    return platform.python_version()
+
+
+def hostname():
+
+    return platform.node()
+
+
+def cpu_cores():
+
+    return os.cpu_count() or "Unknown"
+
+
+def load_average():
 
     try:
 
-        if conversation:
+        a = os.getloadavg()
 
-            return "Active"
-
-    except Exception:
-
-        pass
-
-    return "Idle"
-
-
-def voice_status():
-
-    try:
-
-        if voice:
-
-            return "Ready"
+        return f"{a[0]:.2f} {a[1]:.2f} {a[2]:.2f}"
 
     except Exception:
 
-        pass
+        return "Unavailable"
 
-    return "Unavailable"
 
+# -------------------------------------------------
+# Dashboard
+# -------------------------------------------------
 
 def draw():
 
     now = datetime.now()
 
-    print()
+    header()
 
-    print("╔══════════════════════════════════════════════╗")
+    row("AI Status", "ONLINE")
+    row("Voice", voice_state())
+    row("Conversation", conversation_state())
+    row("Plugins", plugins_loaded())
+    row("Memory", memory_items())
+    row("Scheduler", scheduler_jobs())
 
-    print("║           🤖 KenOS AI Dashboard             ║")
+    line()
 
-    print("╠══════════════════════════════════════════════╣")
+    row("Android", android())
+    row("Python", python_version())
+    row("Architecture", architecture())
+    row("Hostname", hostname())
+    row("CPU Cores", cpu_cores())
 
-    print(f"║ AI Status      : {'ONLINE':<27}║")
+    line()
 
-    print(f"║ Voice Engine   : {voice_status():<27}║")
+    row("CPU", cpu())
+    row("RAM", ram())
+    row("Storage", storage())
+    row("Battery", battery())
+    row("Network", network())
+    row("Load Avg", load_average())
+    row("Uptime", uptime())
 
-    print(f"║ Conversation   : {conversation_status():<27}║")
+    line()
 
-    print(f"║ Plugins        : {plugin_count():<27}║")
+    row(
+        "Time",
+        now.strftime(
+            "%d %b %Y %H:%M:%S"
+        )
+    )
 
-    print(f"║ Memory         : {memory_status():<27}║")
+    footer()
 
-    print(f"║ Scheduler Jobs : {scheduler_status():<27}║")
 
-    print(f"║ Python         : {platform.python_version():<27}║")
-
-    print(f"║ Device         : {platform.machine():<27}║")
-
-    print(f"║ CPU            : {cpu_usage():<27}║")
-
-    print(f"║ RAM            : {memory_usage():<27}║")
-
-    print(f"║ Storage        : {storage():<27}║")
-
-    print(f"║ Battery        : {battery():<27}║")
-
-    print(f"║ Network        : {network():<27}║")
-
-    print(f"║ Uptime         : {uptime():<27}║")
-
-    print(f"║ Time           : {now.strftime('%d %b %Y %H:%M:%S'):<27}║")
-
-    print("╚══════════════════════════════════════════════╝")
-
-    print()
-
+# -------------------------------------------------
+# Live Dashboard
+# -------------------------------------------------
 
 def live():
 
@@ -372,7 +515,7 @@ def live():
 
         while True:
 
-            print("\033[2J\033[H", end="")
+            os.system("clear")
 
             draw()
 
@@ -380,20 +523,39 @@ def live():
 
     except KeyboardInterrupt:
 
-        print("\nLeaving dashboard...")
+        print()
 
+        print("Dashboard closed.")
+
+        print()
+
+
+# -------------------------------------------------
+# Plugin Entry
+# -------------------------------------------------
 
 def run(args):
 
     if args:
 
-        command = args[0].lower()
+        option = args[0].lower()
 
-        if command == "live":
+        if option == "live":
 
             live()
 
             return
 
+        if option == "refresh":
+
+            draw()
+
+            return
+
     draw()
+
+
+if __name__ == "__main__":
+
+    run([])
 
