@@ -2,6 +2,7 @@ from core.chat import reply as chat_reply
 from core.context import context
 from core.intents import detect
 from core.plugin_ai import best_plugin
+from core.parser import parse
 from core.planner import split_tasks
 
 
@@ -30,16 +31,21 @@ class Jarvis:
             return intent
 
         #
-        # AI plugin ranking
+        # AI ranking
         #
 
         plugin = best_plugin(text)
 
         if plugin:
 
+            args = parse(
+                plugin,
+                text
+            )
+
             return (
                 plugin,
-                []
+                args
             )
 
         return None
@@ -50,7 +56,7 @@ class Jarvis:
         text = text.strip()
 
         #
-        # Conversation
+        # Chat
         #
 
         answer = chat_reply(text)
@@ -63,7 +69,7 @@ class Jarvis:
             )
 
         #
-        # Context memory
+        # Context
         #
 
         follow = context.resolve_followup(text)
@@ -73,7 +79,7 @@ class Jarvis:
             return follow
 
         #
-        # AI routing
+        # AI
         #
 
         route = self.ai_route(text)
@@ -101,12 +107,23 @@ class Jarvis:
 
             if "plugin" in task:
 
-                return (
-                    task["plugin"],
-                    task.get(
-                        "args",
-                        []
+                plugin = task["plugin"]
+
+                args = task.get(
+                    "args",
+                    []
+                )
+
+                if not args:
+
+                    args = parse(
+                        plugin,
+                        text
                     )
+
+                return (
+                    plugin,
+                    args
                 )
 
             if "text" in task:
@@ -117,15 +134,15 @@ class Jarvis:
 
                 if plugin:
 
-                    return (
+                    args = parse(
                         plugin,
-                        []
+                        task["text"]
                     )
 
-                return (
-                    task["text"],
-                    []
-                )
+                    return (
+                        plugin,
+                        args
+                    )
 
         return (
             None,
@@ -134,3 +151,4 @@ class Jarvis:
 
 
 jarvis = Jarvis()
+
