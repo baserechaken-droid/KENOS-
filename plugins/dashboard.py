@@ -1,84 +1,171 @@
-import platform
-import subprocess
 import json
+import platform
+import shutil
+import subprocess
 import time
 from datetime import datetime
 
 from plugin_loader import get_skills
 
+try:
+    from core.scheduler import scheduler
+except Exception:
+    scheduler = None
+
+try:
+    from core.memory import memory
+except Exception:
+    memory = None
+
+try:
+    from core.conversation import conversation
+except Exception:
+    conversation = None
+
+try:
+    from services.voice.engine import voice
+except Exception:
+    voice = None
+
 
 NAME = "dashboard"
-DESCRIPTION = "Show KenOS live system dashboard"
+DESCRIPTION = "KenOS AI live dashboard"
 
+SKILLS = [
+    "dashboard",
+    "system status",
+    "status",
+    "overview",
+    "health"
+]
 
 
 def command(cmd):
 
     try:
+
         return subprocess.check_output(
             cmd,
             stderr=subprocess.DEVNULL
         ).decode().strip()
 
-    except:
-        return None
+    except Exception:
 
+        return None
 
 
 def battery():
 
     try:
 
-        data = json.loads(
-            command(
-                ["termux-battery-status"]
-            )
+        raw = command(
+            ["termux-battery-status"]
         )
 
-        return str(
-            data.get("percentage")
-        ) + "%"
+        if not raw:
 
-    except:
+            return "Unavailable"
 
-        return "N/A"
+        data = json.loads(raw)
+
+        percent = data.get(
+            "percentage",
+            "?"
+        )
+
+        charging = (
+            "Charging"
+            if data.get("plugged")
+            else "Battery"
+        )
+
+        temperature = data.get(
+            "temperature",
+            "?"
+        )
+
+        return (
+            f"{percent}% "
+            f"{charging} "
+            f"{temperature}°C"
+        )
+
+    except Exception:
+
+        return "Unavailable"
 
 
-
-def memory():
+def network():
 
     try:
 
-        data = open(
-            "/proc/meminfo"
-        ).read()
+        raw = command(
+            ["termux-wifi-connectioninfo"]
+        )
 
+        if not raw:
+
+            return "Offline"
+
+        data = json.loads(raw)
+
+        ssid = data.get(
+            "ssid",
+            "Unknown"
+        )
+
+        ip = data.get(
+            "ip",
+            "?"
+        )
+
+        return f"{ssid} ({ip})"
+
+    except Exception:
+
+        return "Offline"
+
+
+def memory_usage():
+
+    try:
+
+        info = open(
+            "/proc/meminfo"
+        ).read().splitlines()
 
         total = 0
         available = 0
 
-
-        for line in data.splitlines():
+        for line in info:
 
             if line.startswith("MemTotal"):
-                total = int(line.split()[1])
 
-            if line.startswith("MemAvailable"):
-                available = int(line.split()[1])
+                total = int(
+                    line.split()[1]
+                )
 
+            elif line.startswith(
+                "MemAvailable"
+            ):
+
+                available = int(
+                    line.split()[1]
+                )
+
+        used = total - available
 
         return (
-            f"{(total-available)//1024}MB/"
+            f"{used//1024}MB/"
             f"{total//1024}MB"
         )
 
-    except:
+    except Exception:
 
-        return "N/A"
+        return "Unavailable"
 
 
-
-def cpu():
+def cpu_usage():
 
     try:
 
@@ -86,205 +173,52 @@ def cpu():
             "/proc/stat"
         ).readline().split()
 
-
         idle1 = int(first[4])
+
         total1 = sum(
-            map(int, first[1:8])
+            map(
+                int,
+                first[1:8]
+            )
         )
 
-
-        time.sleep(0.5)
-
+        time.sleep(0.3)
 
         second = open(
             "/proc/stat"
         ).readline().split()
 
-
         idle2 = int(second[4])
+
         total2 = sum(
-            map(int, second[1:8])
+            map(
+                int,
+                second[1:8]
+            )
         )
 
+        total = total2 - total1
 
-        diff_total = total2-total1
-        diff_idle = idle2-idle1
+        idle = idle2 - idle1
 
+        return f"{100*(total-idle)/total:.1f}%"
 
-        usage = (
-            100 *
-            (diff_total-diff_idle)
-            /
-            diff_total
-        )
+    except Exception:
 
-
-        return f"{usage:.1f}%"
-
-    except:
-
-        return "N/A"
-
+        return "Unavailable"
 
 
 def storage():
 
     try:
 
-        result = command(
-            ["df","-h","/data"]
+        total, used, free = shutil.disk_usage("/data")
+
+        return (
+            f"{used//1024//1024//1024}GB/"
+            f"{total//1024//1024//1024}GB"
         )
 
-        if result:
+    except Exception:
 
-            line = result.splitlines()[1]
-
-            parts = line.split()
-
-            return (
-                parts[2]
-                +
-                "/"
-                +
-                parts[1]
-            )
-
-    except:
-
-        pass
-
-
-    return "N/A"
-
-
-
-def uptime():
-
-    try:
-
-        result = command(
-            ["cat","/proc/uptime"]
-        )
-
-
-        if result:
-
-            seconds = int(
-                float(
-                    result.split()[0]
-                )
-            )
-
-            hours = seconds // 3600
-
-            minutes = (
-                seconds % 3600
-            ) // 60
-
-
-            return f"{hours}h {minutes}m"
-
-
-    except:
-
-        pass
-
-
-    try:
-
-        result = command(
-            ["termux-battery-status"]
-        )
-
-        if result:
-
-            return "Running"
-
-
-    except:
-
-        pass
-
-
-    return "N/A"
-
-
-
-def network():
-
-    try:
-
-        info = command(
-            ["termux-wifi-connectioninfo"]
-        )
-
-        if info:
-
-            return "WIFI"
-
-    except:
-
-        pass
-
-
-    return "OFFLINE"
-
-
-
-def run(args):
-
-    now = datetime.now()
-
-
-    print()
-
-    print("╭────────────────────────────────────────────╮")
-    print("│          KenOS v10.1 AI Dashboard           │")
-    print("├────────────────────────────────────────────┤")
-
-    print("│ 🤖 Jarvis       : ONLINE                   │")
-    print("│ 🧠 AI Engine    : READY                    │")
-
-    print(
-        f"│ 🐍 Python       : {platform.python_version():<25}│"
-    )
-
-    print(
-        f"│ 📱 Device       : {platform.machine():<25}│"
-    )
-
-    print(
-        f"│ 🔋 Battery      : {battery():<25}│"
-    )
-
-    print(
-        f"│ 🧠 RAM          : {memory():<25}│"
-    )
-
-    print(
-        f"│ ⚙ CPU           : {cpu():<25}│"
-    )
-
-    print(
-        f"│ 💾 Storage      : {storage():<25}│"
-    )
-
-    print(
-        f"│ 🌐 Network      : {network():<25}│"
-    )
-
-    print(
-        f"│ ⏱ Uptime        : {uptime():<25}│"
-    )
-
-    print(
-        f"│ 🧩 Plugins      : {len(get_skills()):<25}│"
-    )
-
-    print(
-        f"│ 📅 Time         : {now.strftime('%d %b %Y %H:%M'):<25}│"
-    )
-
-    print("╰────────────────────────────────────────────╯")
-
-    print()
+        return "Unavailable"
