@@ -1,4 +1,5 @@
 from plugin_loader import get_plugins
+from core.aliases import find_alias
 
 
 def tokenize(text):
@@ -12,15 +13,17 @@ def tokenize(text):
 
 def score(plugin, text):
 
-    text_words = tokenize(text)
+    words = tokenize(text)
 
-    module = get_plugins().get(plugin)
+    plugins = get_plugins()
 
-    if not module:
+    module = plugins.get(plugin)
+
+    if module is None:
 
         return 0
 
-    score = 0
+    total = 0
 
     #
     # Plugin name
@@ -28,7 +31,7 @@ def score(plugin, text):
 
     if plugin.lower() in text.lower():
 
-        score += 10
+        total += 20
 
     #
     # Skills
@@ -42,54 +45,71 @@ def score(plugin, text):
 
     for skill in skills:
 
-        words = tokenize(skill)
+        skill_words = tokenize(skill)
 
-        if words <= text_words:
+        if skill_words <= words:
 
-            score += 8
+            total += 15
 
-        elif words & text_words:
+        elif skill_words & words:
 
-            score += 3
+            total += 5
 
     #
     # Description
     #
 
-    desc = getattr(
+    description = getattr(
         module,
         "DESCRIPTION",
         ""
     ).lower()
 
-    for word in text_words:
+    for word in words:
 
-        if word in desc:
+        if word in description:
 
-            score += 1
+            total += 1
 
-    return score
+    return total
 
 
 def best_plugin(text):
 
-    best = None
+    #
+    # Alias lookup
+    #
 
-    best_score = 0
+    alias = find_alias(text)
+
+    if alias:
+
+        return alias
+
+    #
+    # AI ranking
+    #
+
+    winner = None
+
+    winner_score = -1
 
     for plugin in get_plugins():
 
-        s = score(plugin, text)
+        s = score(
+            plugin,
+            text
+        )
 
-        if s > best_score:
+        if s > winner_score:
 
-            best_score = s
+            winner_score = s
 
-            best = plugin
+            winner = plugin
 
-    if best_score >= 5:
+    if winner_score < 5:
 
-        return best
+        return None
 
-    return None
+    return winner
 
