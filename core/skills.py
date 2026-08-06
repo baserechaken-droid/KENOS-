@@ -1,41 +1,73 @@
-import json
-import os
+from plugin_loader import get_plugins
 
 
-SKILL_FILE = os.path.join(
-    os.path.dirname(__file__),
-    "skills.json"
-)
+class SkillManager:
+
+    def __init__(self):
+
+        self.reload()
 
 
-def load_skills():
+    def reload(self):
 
-    try:
+        self.skills = {}
 
-        with open(SKILL_FILE, "r") as f:
+        for name, module in get_plugins().items():
 
-            return json.load(f)
+            self.skills[name] = {
 
-    except Exception:
+                "name": name,
 
-        return {}
+                "description": getattr(
+                    module,
+                    "DESCRIPTION",
+                    ""),
 
+                "skills": getattr(
+                    module,
+                    "SKILLS",
+                    []),
 
+                "module": module
 
-def detect_intent(text):
-
-    text = text.lower()
-
-    skills = load_skills()
-
-
-    for intent, words in skills.items():
-
-        for word in words:
-
-            if word in text:
-
-                return intent
+            }
 
 
-    return None
+    def all(self):
+
+        return self.skills
+
+
+    def search(self, query):
+
+        query = query.lower()
+
+        matches = []
+
+        for skill in self.skills.values():
+
+            if query in skill["name"].lower():
+
+                matches.append(skill)
+
+                continue
+
+            if query in skill["description"].lower():
+
+                matches.append(skill)
+
+                continue
+
+            for keyword in skill["skills"]:
+
+                if query in keyword.lower():
+
+                    matches.append(skill)
+
+                    break
+
+        return matches
+
+
+manager = SkillManager()
+
