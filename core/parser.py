@@ -1,3 +1,10 @@
+from core.extractor import (
+    extract_number,
+    extract_delay,
+    extract_theme,
+    extract_on_off
+)
+
 import re
 
 
@@ -11,23 +18,21 @@ def parse(plugin, text):
 
     if plugin == "torch":
 
-        if any(
-            x in text for x in (
-                "on",
-                "enable",
-                "activate"
-            )
-        ):
-            return ["on"]
+        args = []
 
-        if any(
-            x in text for x in (
-                "off",
-                "disable",
-                "deactivate"
-            )
-        ):
-            return ["off"]
+        state = extract_on_off(text)
+
+        if state:
+
+            args.append(state)
+
+        delay = extract_delay(text)
+
+        if delay:
+
+            args.append(str(delay))
+
+        return args
 
     #
     # Theme
@@ -35,17 +40,13 @@ def parse(plugin, text):
 
     if plugin == "theme":
 
-        for theme in (
-            "matrix",
-            "cyber",
-            "ubuntu",
-            "minimal",
-            "ironman"
-        ):
+        theme = extract_theme(text)
 
-            if theme in text:
+        if theme:
 
-                return [theme]
+            return [theme]
+
+        return []
 
     #
     # Volume
@@ -53,11 +54,11 @@ def parse(plugin, text):
 
     if plugin == "volume":
 
-        m = re.search(r"(\d+)", text)
+        number = extract_number(text)
 
-        if m:
+        if number is not None:
 
-            return [m.group(1)]
+            return [str(number)]
 
         if "up" in text or "increase" in text:
 
@@ -66,6 +67,8 @@ def parse(plugin, text):
         if "down" in text or "decrease" in text:
 
             return ["down"]
+
+        return []
 
     #
     # Remember
@@ -85,6 +88,8 @@ def parse(plugin, text):
                 m.group(2).strip()
             ]
 
+        return []
+
     #
     # Recall
     #
@@ -101,6 +106,27 @@ def parse(plugin, text):
             return [
                 m.group(1).strip()
             ]
+
+        return []
+
+    #
+    # Forget
+    #
+
+    if plugin == "forget":
+
+        m = re.search(
+            r"forget(?: my)? (.+)",
+            text
+        )
+
+        if m:
+
+            return [
+                m.group(1).strip()
+            ]
+
+        return []
 
     return []
 
