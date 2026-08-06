@@ -222,3 +222,178 @@ def storage():
     except Exception:
 
         return "Unavailable"
+
+def uptime():
+
+    try:
+
+        with open("/proc/uptime") as f:
+
+            seconds = int(float(f.read().split()[0]))
+
+        days = seconds // 86400
+
+        hours = (seconds % 86400) // 3600
+
+        minutes = (seconds % 3600) // 60
+
+        if days:
+
+            return f"{days}d {hours}h"
+
+        return f"{hours}h {minutes}m"
+
+    except Exception:
+
+        return "Unavailable"
+
+
+def plugin_count():
+
+    try:
+
+        return str(len(get_skills()))
+
+    except Exception:
+
+        return "0"
+
+
+def scheduler_status():
+
+    try:
+
+        if scheduler:
+
+            return str(scheduler.running())
+
+    except Exception:
+
+        pass
+
+    return "Unavailable"
+
+
+def memory_status():
+
+    try:
+
+        if memory:
+
+            return str(len(memory.all()))
+
+    except Exception:
+
+        pass
+
+    return "0"
+
+
+def conversation_status():
+
+    try:
+
+        if conversation:
+
+            return "Active"
+
+    except Exception:
+
+        pass
+
+    return "Idle"
+
+
+def voice_status():
+
+    try:
+
+        if voice:
+
+            return "Ready"
+
+    except Exception:
+
+        pass
+
+    return "Unavailable"
+
+
+def draw():
+
+    now = datetime.now()
+
+    print()
+
+    print("╔══════════════════════════════════════════════╗")
+
+    print("║           🤖 KenOS AI Dashboard             ║")
+
+    print("╠══════════════════════════════════════════════╣")
+
+    print(f"║ AI Status      : {'ONLINE':<27}║")
+
+    print(f"║ Voice Engine   : {voice_status():<27}║")
+
+    print(f"║ Conversation   : {conversation_status():<27}║")
+
+    print(f"║ Plugins        : {plugin_count():<27}║")
+
+    print(f"║ Memory         : {memory_status():<27}║")
+
+    print(f"║ Scheduler Jobs : {scheduler_status():<27}║")
+
+    print(f"║ Python         : {platform.python_version():<27}║")
+
+    print(f"║ Device         : {platform.machine():<27}║")
+
+    print(f"║ CPU            : {cpu_usage():<27}║")
+
+    print(f"║ RAM            : {memory_usage():<27}║")
+
+    print(f"║ Storage        : {storage():<27}║")
+
+    print(f"║ Battery        : {battery():<27}║")
+
+    print(f"║ Network        : {network():<27}║")
+
+    print(f"║ Uptime         : {uptime():<27}║")
+
+    print(f"║ Time           : {now.strftime('%d %b %Y %H:%M:%S'):<27}║")
+
+    print("╚══════════════════════════════════════════════╝")
+
+    print()
+
+
+def live():
+
+    try:
+
+        while True:
+
+            print("\033[2J\033[H", end="")
+
+            draw()
+
+            time.sleep(1)
+
+    except KeyboardInterrupt:
+
+        print("\nLeaving dashboard...")
+
+
+def run(args):
+
+    if args:
+
+        command = args[0].lower()
+
+        if command == "live":
+
+            live()
+
+            return
+
+    draw()
+
