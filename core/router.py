@@ -1,3 +1,4 @@
+import threading
 import time
 
 from command_manager import execute, exists
@@ -17,17 +18,75 @@ def speak(text):
     try:
 
         if voice:
+
             voice.speak(str(text))
 
     except Exception:
+
         pass
+
+
+def delayed_execute(plugin, args, delay):
+
+    print(f"⏳ Waiting {delay} second(s)...")
+
+    time.sleep(delay)
+
+    execute(plugin, args)
 
 
 def run_plugin(plugin, args):
 
     jarvis.set_context(plugin, args)
 
-    result = execute(plugin, args)
+    #
+    # Detect delay as last numeric argument
+    #
+
+    delay = None
+
+    real_args = list(args)
+
+    if real_args:
+
+        last = real_args[-1]
+
+        if isinstance(last, str) and last.isdigit():
+
+            delay = int(last)
+
+            real_args = real_args[:-1]
+
+    #
+    # Schedule command
+    #
+
+    if delay is not None and delay > 0:
+
+        print(
+            f"🤖 Jarvis: Scheduled '{plugin}' in {delay} second(s)."
+        )
+
+        threading.Thread(
+            target=delayed_execute,
+            args=(
+                plugin,
+                real_args,
+                delay
+            ),
+            daemon=True
+        ).start()
+
+        return
+
+    #
+    # Execute immediately
+    #
+
+    result = execute(
+        plugin,
+        real_args
+    )
 
     if isinstance(result, str) and result.strip():
 
@@ -42,11 +101,16 @@ def run_plan(plan):
 
     for step in plan:
 
-        delay = step.get("delay", 0)
+        delay = step.get(
+            "delay",
+            0
+        )
 
         if delay > 0:
 
-            print(f"⏳ Waiting {delay} second(s)...")
+            print(
+                f"⏳ Waiting {delay} second(s)..."
+            )
 
             time.sleep(delay)
 
@@ -56,11 +120,19 @@ def run_plan(plan):
 
             continue
 
-        args = step.get("args", [])
+        args = step.get(
+            "args",
+            []
+        )
 
-        print(f"🤖 Jarvis → {plugin}")
+        print(
+            f"🤖 Jarvis → {plugin}"
+        )
 
-        run_plugin(plugin, args)
+        run_plugin(
+            plugin,
+            args
+        )
 
 
 def process(text):
@@ -68,6 +140,7 @@ def process(text):
     text = text.strip()
 
     if not text:
+
         return
 
     #
@@ -111,7 +184,10 @@ def process(text):
 
     if plugin:
 
-        run_plugin(plugin, data)
+        run_plugin(
+            plugin,
+            data
+        )
 
         return
 
@@ -119,9 +195,13 @@ def process(text):
     # Unknown
     #
 
-    message = "Sorry Ken, I didn't understand that."
+    message = (
+        "Sorry Ken, I didn't understand that."
+    )
 
-    print(f"🤖 Jarvis: {message}")
+    print(
+        f"🤖 Jarvis: {message}"
+    )
 
     speak(message)
 
