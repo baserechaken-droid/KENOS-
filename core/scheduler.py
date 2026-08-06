@@ -1,31 +1,54 @@
 import threading
 import time
 
-_tasks = []
+
+class Scheduler:
+
+    def __init__(self):
+
+        self.jobs = []
+
+        self.lock = threading.Lock()
 
 
-def schedule(delay, func, *args):
+    def schedule(self, delay, callback, *args, **kwargs):
 
-    def wrapper():
-        time.sleep(delay)
+        def worker():
 
-        try:
-            func(*args)
-        except Exception as e:
-            print(f"[Scheduler] {e}")
+            time.sleep(delay)
 
-    thread = threading.Thread(
-        target=wrapper,
-        daemon=True
-    )
+            try:
 
-    thread.start()
+                callback(*args, **kwargs)
 
-    _tasks.append({
-        "delay": delay,
-        "function": func.__name__
-    })
+            finally:
+
+                with self.lock:
+
+                    if thread in self.jobs:
+
+                        self.jobs.remove(thread)
+
+        thread = threading.Thread(
+            target=worker,
+            daemon=True
+        )
+
+        with self.lock:
+
+            self.jobs.append(thread)
+
+        thread.start()
+
+        return thread
 
 
-def tasks():
-    return list(_tasks)
+    def running(self):
+
+        with self.lock:
+
+            return len(self.jobs)
+
+
+scheduler = Scheduler()
+
